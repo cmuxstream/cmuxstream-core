@@ -15,7 +15,7 @@ class Xtreme:
         #   http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.45.3654
         #
         # For eps = 0.1, n_components >= n_features
-        self.projector = SparseRandomProjection(n_components=300,
+        self.projector = SparseRandomProjection(n_components=10,
                                                 density=1/3.0,
                                                 random_state=SEED)
         self.binwidth = binwidth
@@ -23,8 +23,6 @@ class Xtreme:
     def fit(self, X):
         projected_X = self.projector.fit_transform(X)
         binned_X = np.floor(projected_X/self.binwidth).astype(np.int)
-        print projected_X 
-        print binned_X
         for row in binned_X:
             l = tuple(row)
             if not l in self.cmsketch:

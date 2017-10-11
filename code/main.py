@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     X = scale(X)
 
-    xtreme_clf = Xtreme(binwidth=1000.0)
+    xtreme_clf = Xtreme(binwidth=100000000.0)
     xtreme_clf.fit(X)
     ypred_xtreme, yscore_xtreme = xtreme_clf.predict(X) 
 
@@ -27,12 +27,18 @@ if __name__ == "__main__":
     outlier_scores = yscore_xtreme[outlier_idx]
     inlier_scores = yscore_xtreme[~outlier_idx]
 
-    print inlier_scores
-    print outlier_scores
-    
     ax = plt.subplots()
-    counts, bins, patches = plt.hist(outlier_scores, bins=100, color=BLUE)
+    counts, bins, patches = plt.hist(outlier_scores, bins=np.arange(0,20),
+                                     color=RED)
+    plt.grid()
+    plt.xticks(np.arange(0,20,1))
     plt.savefig('outlier_scores.png', bbox_inches='tight')
+    ax = plt.subplots()
+    counts, bins, patches = plt.hist(inlier_scores, bins=np.arange(0,20), 
+                                     color=BLUE)
+    plt.grid()
+    plt.xticks(np.arange(0,20,1))
+    plt.savefig('inlier_scores.png', bbox_inches='tight')
     
     print 'XTREME' 
     print '\tPrecision:', precision_score(y, ypred_xtreme)
