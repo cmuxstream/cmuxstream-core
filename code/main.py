@@ -72,9 +72,10 @@ if __name__ == "__main__":
                                          random_state=SEED)
     projected_X = projector.fit_transform(X)
 
-    plot_distance_histograms(X, tag="nonoise")
-    plot_distance_histograms(projected_X, tag="projected" + str(k))
+    #plot_distance_histograms(X, tag="nonoise")
+    #plot_distance_histograms(projected_X, tag="projected" + str(k))
 
+    """
     kurt = kurtosis(X, fisher=False)
     plt.figure(0)
     plt.hist(kurt, bins=50, align='mid')
@@ -87,8 +88,10 @@ if __name__ == "__main__":
     plt.grid()
     plt.savefig("kurt_hist_projected.png", bbox_inches="tight")
     plt.clf()
+    """
 
-    xtreme_clf = Xtreme(binwidth=10000.0, sketchsize=k, maxdepth=20)
+    xtreme_clf = Xtreme(binwidth=10000.0, sketchsize=k, maxdepth=10,
+                        ncomponents=25, ntrees=50)
     xtreme_clf.fit(X)
     ypred_xtreme, yscore_xtreme = xtreme_clf.predict(X) 
     yscore_xtreme = -1.0 * yscore_xtreme
@@ -101,7 +104,7 @@ if __name__ == "__main__":
 
     # iforest on full data
     iforest_clf = IsolationForest(n_estimators=100,
-                                  max_samples='auto',
+                                  max_samples=1.0,
                                   contamination=0.03,
                                   max_features=1.0,
                                   bootstrap=False,
