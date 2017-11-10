@@ -4,6 +4,7 @@ from constants import *
 import numpy as np
 from sklearn.random_projection import SparseRandomProjection
 from HSTree import HSTree
+from HSTrees import HSTrees
 
 class Xtreme:
     projected_X = None
@@ -56,12 +57,18 @@ class Xtreme:
                 self.cmsketch[l] = 1
             self.cmsketch[l] += 1
         """
+        """
         trees = []
         for t in range(self.ntrees):
             #print "fitting tree", t
             tree = HSTree(maxdepth=self.maxdepth)
             tree = tree.fit(projected_X)
             trees.append(tree)
+        self.trees = trees
+        """
+
+        trees = HSTrees(n_estimators=100, max_samples='auto')
+        trees.fit(projected_X)
         self.trees = trees
 
     def predict(self, X, threshold=0.5):
@@ -92,12 +99,18 @@ class Xtreme:
         print yscore.shape
         """
 
+        """
         projected_X = self.projector.fit_transform(X)
         for i in range(X.shape[0]):
             scores = np.zeros(len(self.trees))
             for j, t in enumerate(self.trees):
                 scores[j] = t.score(projected_X[i,:])
             yscore[i] = np.mean(scores)
+        """
+
+        projected_X = self.projector.fit_transform(X)
+        yscore = self.trees.decision_function(projected_X)
+
         """
         binned_X = np.floor(projected_X/self.binwidth).astype(np.int)
         for i, row in enumerate(binned_X):

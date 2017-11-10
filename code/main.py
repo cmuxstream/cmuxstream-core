@@ -15,7 +15,6 @@ from scipy.stats import kurtosis
 from scipy.spatial.distance import pdist, squareform
 import sys
 from xtreme import Xtreme
-from HSTree import HSTree
 
 RED = '#e31a1c'
 BLUE = '#1f78b4'
@@ -89,7 +88,7 @@ if __name__ == "__main__":
     plt.savefig("kurt_hist_projected.png", bbox_inches="tight")
     plt.clf()
 
-    xtreme_clf = Xtreme(binwidth=10000.0, sketchsize=k, maxdepth=10)
+    xtreme_clf = Xtreme(binwidth=10000.0, sketchsize=k, maxdepth=20)
     xtreme_clf.fit(X)
     ypred_xtreme, yscore_xtreme = xtreme_clf.predict(X) 
     yscore_xtreme = -1.0 * yscore_xtreme
