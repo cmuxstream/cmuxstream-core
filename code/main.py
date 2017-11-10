@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 from constants import *
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.ensemble import IsolationForest
