@@ -91,10 +91,10 @@ if __name__ == "__main__":
     """
 
     print "Fitting xstream..."
-    xtreme_clf = Xtreme(binwidth=10000.0, sketchsize=k, maxdepth=10,
-                        ncomponents=1, ntrees=100)
+    xtreme_clf = Xtreme(binwidth=10000.0, sketchsize=k, maxdepth=20,
+                        ncomponents=1, ntrees=100, deltamax=0.5)
     xtreme_clf.fit(X)
-    ypred_xtreme, yscore_xtreme = xtreme_clf.predict(X) 
+    yscore_xtreme = xtreme_clf.predict(X)
 
     print "lociplot..."
     xtreme_clf.lociplot(X, y)
