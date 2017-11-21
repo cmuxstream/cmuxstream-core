@@ -56,7 +56,7 @@ if __name__ == "__main__":
         X = MinMaxScaler().fit_transform(X)
         
         # add noise
-        Xnoisy = np.concatenate((X, np.random.normal(loc=0.0, scale=0.05,
+        Xnoisy = np.concatenate((X, np.random.normal(loc=0.5, scale=0.05,
                                                      size=(X.shape[0], 100))), axis=1)
         X = Xnoisy
     elif sys.argv[1] == "http":
@@ -90,11 +90,14 @@ if __name__ == "__main__":
     plt.clf()
     """
 
+    print "Fitting xstream..."
     xtreme_clf = Xtreme(binwidth=10000.0, sketchsize=k, maxdepth=10,
-                        ncomponents=25, ntrees=50)
+                        ncomponents=1, ntrees=100)
     xtreme_clf.fit(X)
     ypred_xtreme, yscore_xtreme = xtreme_clf.predict(X) 
-    yscore_xtreme = -1.0 * yscore_xtreme
+
+    print "lociplot..."
+    xtreme_clf.lociplot(X, y)
 
     plt.figure(0)
     precision, recall, _ = precision_recall_curve(y, yscore_xtreme, pos_label=1)
@@ -103,6 +106,7 @@ if __name__ == "__main__":
              label='xstream ' + '{:.3f}'.format(average_precision))
 
     # iforest on full data
+    print "Fitting iforest..."
     iforest_clf = IsolationForest(n_estimators=100,
                                   max_samples=1.0,
                                   contamination=0.03,
@@ -113,7 +117,7 @@ if __name__ == "__main__":
                                   verbose=0)
     iforest_clf.fit(X)
     ypred_iforest = (iforest_clf.predict(X) == -1).astype(np.int) # -1 = outlier 
-    yscore_iforest = -1.0 * iforest_clf.decision_function(X)
+    yscore_iforest = 0.5 - iforest_clf.decision_function(X)
 
     plt.figure(0)
     precision, recall, _ = precision_recall_curve(y, yscore_iforest, pos_label=1)
@@ -130,6 +134,7 @@ if __name__ == "__main__":
         plt.savefig("pr_xstream_iforest.png", bbox_inches="tight")
         sys.exit()
 
+    print "fitting iforest-p..."
     iforest_clf = IsolationForest(n_estimators=100,
                                   max_samples='auto',
                                   contamination=0.03,

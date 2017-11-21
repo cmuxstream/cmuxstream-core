@@ -541,6 +541,34 @@ class HSTree(object):
         scores = self.tree_.n_node_samples[leaves] * (2. ** depths)
         return scores
 
+    def decision_function_loci(self, X):
+        max_depth = ((2 ** 31) - 1 if self.max_depth is None
+                     else self.max_depth)
+        n = X.shape[0]
+        scores = np.zeros((n, max_depth+2))
+        leaves, nodeinds = self.tree_.apply(X, getleaves=True, getnodeinds=True)
+        depths = np.array(np.transpose(nodeinds.sum(axis=1)))
+        for i in np.arange(n):
+            node = 0  # start at root
+            d = 1
+            while node >= 0:
+                scores[i,d] = self.tree_.n_node_samples[node] * 2.0**d
+                if node == 0:
+                    scores[i,d] = n
+                #assert nodeinds[i,node] == 1
+                v = X[i, self.tree_.feature[node]]
+                if self.tree_.children_left[node] == -1 and\
+                   self.tree_.children_right[node] == -1:
+                    #assert node == leaves[i]
+                    #assert d == depths[0,i]
+                    break
+                if v <= self.tree_.threshold[node]:
+                    next_node = self.tree_.children_left[node]
+                else:
+                    next_node = self.tree_.children_right[node]
+                node = next_node
+                d += 1
+        return scores
 
 def f(i):
     return i * i
