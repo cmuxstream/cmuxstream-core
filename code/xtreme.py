@@ -17,20 +17,34 @@ class Histogram:
         self.fs = []
         self.cmsketches = []
 
-    def fit(self, X):
+    def fit(self, X, verbose=False):
         ndim = X.shape[1]
         nrows = X.shape[0]
         levelcount = {f: -1 for f in range(ndim)}
         binids = np.zeros(X.shape, dtype=np.float)
+        if verbose:
+            print "Initial bins:"
+            print binids
         for level in range(self.levels):
             f = np.random.randint(0, ndim) # random feature
             self.fs.append(f)
             levelcount[f] += 1
 
+            if verbose:
+                print "Level", level, "feature", f
+
             if levelcount[f] == 0:
+                if verbose:
+                    print "\tFirst time use, dividing column f by", self.deltamax
                 binids[:,f] = X[:,f]/self.deltamax
             else:
+                if verbose:
+                    print "\tMultiplying column f by 2.0"
                 binids[:,f] = binids[:,f] * 2.0
+            if verbose:
+                print "Bins:"
+                print binids
+                print np.floor(binids)
 
             cmsketch = {}
             for row in binids:
@@ -40,16 +54,14 @@ class Histogram:
                 cmsketch[l] += 1
 
             self.cmsketches.append(cmsketch)
-            #print "Level counts:", level
-            #for k, v in cmsketch.iteritems():
-            #    print v
 
     def score(self, X):
         scores = np.zeros((X.shape[0], self.levels))
-        
+
         ndim = X.shape[1]
         levelcount = {f: -1 for f in range(ndim)}
         binids = np.zeros(X.shape, dtype=np.float)
+
         for level in range(self.levels):
             f = self.fs[level]
             levelcount[f] += 1
@@ -72,7 +84,7 @@ class Histogram:
 class Xtreme:
 
     def __init__(self, binwidth=1.0, sketchsize=15, ntrees=100, maxdepth=10,
-                 ncomponents=10):
+                 ncomponents=10, deltamax=20.0):
         # n_components >= 4 log(n_samples) / (eps^2 / 2 - eps^3 / 3)
         # See Theorem 2.1:
         #   http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.45.3654
@@ -87,6 +99,7 @@ class Xtreme:
         self.ncomponents = ncomponents
         self.sketchsize = sketchsize
         self.trees = None
+        self.deltamax = deltamax
 
     def fit(self, X):
         assert self.projector.n_components < X.shape[1]
@@ -98,10 +111,10 @@ class Xtreme:
         for i in range(ndim):
             fmap[i] = set([])
             k = np.random.randint(0, ndim/2 + 1)
-            #k = self.ncomponents #FIX
+            k = self.ncomponents #FIX
             for j in range(k):
                 c_j = np.random.randint(0, self.ncomponents)
-                #c_j = j #FIX
+                c_j = j #FIX
                 fmap[i].add(c_j)
                 if c_j not in cmap:
                     cmap[c_j] = set([])
@@ -112,102 +125,91 @@ class Xtreme:
 
         projected_X = self.projector.fit_transform(X)
 
+        # collection of trees/histograms for each component
         trees = []
         for j in range(self.ncomponents):
             cmap[j] = np.array(list(cmap[j]), dtype=np.int) 
             component_X = projected_X[:, cmap[j]]
 
+            # 1. HSTree method: HSForest for each component
+            """
             t = HSTrees(n_estimators=self.ntrees, max_samples=1.0, n_jobs=1,
                         random_state=SEED, max_depth=10)
             t.fit(component_X)
             trees.append(t)
-
-            """
-            print "Component:", j
-            tk = []
-            for k in range(50):
-                t = Histogram(levels=10)
-                t.fit(component_X)
-                tk.append(t)
-            trees.append(tk)
             """
 
+            # 2. Histogram method: Histogram forest for each component
+            hists = []
+            for h in range(self.ntrees):
+                hist = Histogram(deltamax=self.deltamax, levels=self.maxdepth)
+                hist.fit(component_X)
+                hists.append(hist)
+            trees.append(hists)
         self.trees = trees
 
     def predict(self, X, threshold=0.5):
-        """ 1 if outlier, 0 otherwise """
-        ypred = np.ones(X.shape[0], dtype=np.int)
         yscore = np.zeros(X.shape[0], dtype=np.float)
-        samplescore = np.zeros((X.shape[0], 20), dtype=np.float)
-
-        #assert self.cmsketch is not None
-        #assert self.trees is not None
-        #assert self.sampled_trees is not None
-
-        """
-        for i in range(20):
-            # sample 50 random columns with replacement
-            cols = self.cols[i] 
-            Xsample = X[:,cols]
-            trees = self.sampled_trees[i]
-            projected_X = self.projector.fit_transform(Xsample)
-        
-            for j in range(X.shape[0]):
-                scores = np.zeros(len(trees))
-                for k, t in enumerate(trees):
-                    scores[k] = t.score(projected_X[j,:])
-                samplescore[j,i] = np.mean(scores)
-
-        yscore = np.max(samplescore, axis=1)
-        print yscore.shape
-        """
-
-        """
         projected_X = self.projector.fit_transform(X)
-        for i in range(X.shape[0]):
-            scores = np.zeros(len(self.trees))
-            for j, t in enumerate(self.trees):
-                scores[j] = t.score(projected_X[i,:])
-            yscore[i] = np.mean(scores)
-        """
 
-        projected_X = self.projector.fit_transform(X)
-        #yscore = self.trees.decision_function(projected_X)
-
-        yscore = np.zeros(X.shape[0])
         for j, t_j in enumerate(self.trees):
             component_X = projected_X[:, self.cmap[j]]
-            yscore_j = t_j.decision_function(component_X)
 
-            """
-            yscore_j = np.zeros(X.shape[0])
-            for hist in t_j:
-                npoints = hist.score(component_X) # score for each level
-                hist_score = 1.0/np.mean(npoints, axis=1) # aggreg. across levels
+            # 1. Score from HS forest
+            #yscore_j = -t_j.decision_function(component_X)
+
+            # 2. Score from histogram forest
+            yscore_j = np.zeros((X.shape[0], self.maxdepth)) # score at each level
+            for h in t_j:
+                hist_score = h.score(component_X) # score for each level
                 yscore_j += hist_score
             yscore_j /= float(len(t_j))
-            """
-            yscore += yscore_j
-        yscore /= self.ncomponents
-        yscore = -yscore
-
-        return ypred, yscore
-
-    def lociplot(self, X, y):
-        projected_X = self.projector.fit_transform(X)
-        yscore = np.zeros(X.shape[0])
-        for j, t_j in enumerate(self.trees):
-            #score from each component
-            component_X = projected_X[:, self.cmap[j]]
-            #yscore_j = t_j.decision_function(component_X)
-
-            yscore_j = np.zeros((X.shape[0], 12))
-            for tree in t_j.estimators_:
-                tree_score = tree.decision_function_loci(X)
-                yscore_j += tree_score
-            yscore_j /= float(len(t_j.estimators_))
+            multiplier = np.array([2**d for d in range(self.maxdepth)])
+            yscore_j *= multiplier
+            yscore_j = yscore_j[:,-1] # max depth
             yscore_j = -yscore_j
 
+            yscore += yscore_j
+        yscore /= self.ncomponents
+
+        return yscore
+
+    def lociplot(self, X, y):
+        yscore = np.zeros(X.shape[0])
+        projected_X = self.projector.fit_transform(X)
+
+        for j, t_j in enumerate(self.trees):
+            component_X = projected_X[:, self.cmap[j]]
+
+            # 1. Score from HS forest
+            """
+            nlevels = 12
+            yscore_j = np.zeros((X.shape[0], nlevels))
+            hsf = t_j.decision_function(component_X)
+            tmp2 = np.zeros((1,X.shape[0]))
+            for tree in t_j.estimators_:
+                tree_score = tree.decision_function_loci(component_X)
+                temp = tree.decision_function(component_X)
+                assert np.allclose(temp, tree_score[:,-1])
+                tmp2 += temp
+                yscore_j += tree_score
+            tmp2 /= float(len(t_j.estimators_))
+            assert np.allclose(tmp2, hsf)
+            yscore_j /= float(len(t_j.estimators_))
+            yscore_j = -yscore_j
+            """
+            
+            # 2. Score from histogram forest
+            nlevels = self.maxdepth
+            yscore_j = np.zeros((X.shape[0], nlevels)) # score at each level
+            for h in t_j:
+                hist_score = h.score(component_X) # score for each level
+                yscore_j += hist_score
+            yscore_j /= float(len(t_j))
+            multiplier = np.array([2**d for d in range(self.maxdepth)])
+            yscore_j *= multiplier
+            yscore_j = -yscore_j
+            
             plt.figure(5)
 
             anomalies = y == 1
@@ -223,31 +225,31 @@ class Xtreme:
             pct75_benign_scores = np.percentile(yscore_j[~anomalies,:], q=75.0,
                                                 axis=0)
  
-            plt.plot(range(12), mean_anomaly_scores.T, '-', color='#e41a1c',
+            plt.plot(range(nlevels), mean_anomaly_scores.T, '-', color='#e41a1c',
                      alpha=1.0)
-            plt.plot(range(12), pct25_anomaly_scores.T, '--', color='#e41a1c',
+            plt.plot(range(nlevels), pct25_anomaly_scores.T, '--', color='#e41a1c',
                      alpha=0.5)
-            plt.plot(range(12), pct75_anomaly_scores.T, '--', color='#e41a1c',
+            plt.plot(range(nlevels), pct75_anomaly_scores.T, '--', color='#e41a1c',
                      alpha=0.5)
-            plt.plot(range(12), mean_benign_scores.T, '-', color='#377eb8',
+            plt.plot(range(nlevels), mean_benign_scores.T, '-', color='#377eb8',
                      alpha=1.0)
-            plt.plot(range(12), pct25_benign_scores.T, '--', color='#377eb8',
+            plt.plot(range(nlevels), pct25_benign_scores.T, '--', color='#377eb8',
                      alpha=0.5)
-            plt.plot(range(12), pct75_benign_scores.T, '--', color='#377eb8',
+            plt.plot(range(nlevels), pct75_benign_scores.T, '--', color='#377eb8',
                      alpha=0.5)
 
-            plt.xticks(range(12))
+            plt.xticks(range(nlevels))
             plt.xlabel(r'Level $d$')
             plt.ylabel(r'Anomaly score $-N.d \times 2^d$')
             plt.grid()
             plt.savefig("lociplot-mean.png", bbox_inches="tight")
 
             plt.clf()
-            plt.plot(range(12), yscore_j[~anomalies,:].T, '-o', alpha=0.1,
+            plt.plot(range(nlevels), yscore_j[~anomalies,:].T, '-o', alpha=0.1,
                      color='#377eb8')
-            plt.plot(range(12), yscore_j[anomalies,:].T, '-o', alpha=0.2,
+            plt.plot(range(nlevels), yscore_j[anomalies,:].T, '-o', alpha=0.2,
                      color='#e41a1c')
-            plt.xticks(range(12))
+            plt.xticks(range(nlevels))
             plt.xlabel(r'Level $d$')
             plt.ylabel(r'Anomaly score $-N.d \times 2^d$')
             plt.grid()
