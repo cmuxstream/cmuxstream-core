@@ -49,7 +49,7 @@ def run_for_benchmarks(ds_name):
     
     print index, auc_arr, ap_arr
     
-def run_for_consolidated_benchmarks(in_dir, num_runs=50, out_file):
+def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
     fw=open(out_file,'w')
     list_files = os.listdir(data_path)
     for in_file in list_files:
