@@ -57,6 +57,8 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
         auc_arr = []
         ap_arr = []
         for i in range(num_runs):
+            if(i%5==0):
+                print i
             auc, ap = run_IForest(X, labels)
             auc_arr.append(auc)
             ap_arr.append(ap)
