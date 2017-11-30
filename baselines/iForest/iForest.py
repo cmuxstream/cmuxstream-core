@@ -49,7 +49,23 @@ def run_for_benchmarks(ds_name):
     
     print index, auc_arr, ap_arr
     
-ds_name = "abalone"
-run_for_benchmarks(ds_name)
+def run_for_consolidated_benchmarks(in_dir, num_runs=50, out_file):
+    fw=open(out_file,'w')
+    list_files = os.listdir(data_path)
+    for in_file in list_files:
+        X, labels = read_dataset(os.path.join(data_path,in_file))
+        auc_arr = []
+        ap_arr = []
+        for i in range(num_runs):
+            auc, ap = run_IForest(X, labels)
+            auc_arr.append(auc)
+            ap_arr.append(ap)
+        fw.write(str(in_file)+","+str(np.mean(auc_arr))+","+str(np.std(auc_arr))+","+str(np.mean(ap_arr))+","+str(np.std(ap_arr))+"\n")
+    fw.close()
+
+#run_for_benchmarks(ds_name)
 #run_IForest(X, labels)
+in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
+out_file = "/nfshome/hlamba/HighDim_OL/Results/IForest_50.txt"
+run_for_consolidated_benchmarks(in_dir, num_runs, out_file)
     
