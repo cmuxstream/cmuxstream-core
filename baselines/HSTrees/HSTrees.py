@@ -26,7 +26,7 @@ from sklearn.ensemble.bagging import BaseBagging
 from sklearn.tree._tree import Tree
 
 from multiprocessing import Pool
-sys.path.append('./support')
+sys.path.append('../support')
 from r_support import *
 
 __all__ = ["HSSplitter", "HSTrees", "HSTree"]
