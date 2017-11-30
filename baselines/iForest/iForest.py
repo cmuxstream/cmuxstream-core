@@ -5,7 +5,8 @@ import pandas as pd
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import average_precision_score, roc_auc_score
 
-DATA_DIR = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets"
+#DATA_DIR = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets"
+DATA_DIR  = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
 
 def read_dataset(filename):
     df = pd.read_csv(filename)
