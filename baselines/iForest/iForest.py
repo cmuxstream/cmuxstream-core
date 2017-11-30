@@ -51,9 +51,9 @@ def run_for_benchmarks(ds_name):
     
 def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
     fw=open(out_file,'w')
-    list_files = os.listdir(data_path)
+    list_files = os.listdir(in_dir)
     for in_file in list_files:
-        X, labels = read_dataset(os.path.join(data_path,in_file))
+        X, labels = read_dataset(os.path.join(in_dir,in_file))
         auc_arr = []
         ap_arr = []
         for i in range(num_runs):
