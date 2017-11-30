@@ -67,5 +67,5 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
 #run_IForest(X, labels)
 in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
 out_file = "/nfshome/hlamba/HighDim_OL/Results/IForest_50.txt"
-run_for_consolidated_benchmarks(in_dir, num_runs, out_file)
+run_for_consolidated_benchmarks(in_dir,out_file)
     
