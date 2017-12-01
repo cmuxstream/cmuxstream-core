@@ -665,9 +665,10 @@ class HSTrees(object):
         n_trees = self.n_estimators
         n_pool = self.n_jobs
 
-        p = Pool(n_pool)
-        rnd_int = self.random_state.randint(42)
-        trees = p.map(hstree_fit, [(max_depth, X, rnd_int + i) for i in range(n_trees)])
+        #p = Pool(n_pool)
+        with Pool(n_pool) as p:
+            rnd_int = self.random_state.randint(42)
+            trees = p.map(hstree_fit, [(max_depth, X, rnd_int + i) for i in range(n_trees)])
         return trees
 
     def fit(self, X, y=None, sample_weight=None):
