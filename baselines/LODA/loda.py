@@ -1,3 +1,5 @@
+import sys
+sys.path.append("../support")
 from r_support import *
 import numpy as np
 from numpy import random

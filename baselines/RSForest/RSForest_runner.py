@@ -52,5 +52,28 @@ def run_for_benchmarks(ds_name):
     
     print index, auc_arr, ap_arr
     
-ds_name = "abalone"
-run_for_benchmarks(ds_name)
+def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
+    fw=open(out_file,'w')
+    list_files = os.listdir(in_dir)
+    for in_file in list_files:
+        X, labels = read_dataset(os.path.join(in_dir,in_file))
+        auc_arr = []
+        ap_arr = []
+        for i in range(num_runs):
+            if(i%5==0):
+                print i
+            auc, ap = run_HSTrees(X, labels)
+            auc_arr.append(auc)
+            ap_arr.append(ap)
+        fw.write(str(in_file)+","+str(np.mean(auc_arr))+","+str(np.std(auc_arr))+","+str(np.mean(ap_arr))+","+str(np.std(ap_arr))+"\n")
+    fw.close()
+    
+#ds_name = "abalone"
+#run_for_benchmarks(ds_name)
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets/abalone/consolidated"
+out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets/abalone/RSForest_50.txt"
+run_for_consolidated_benchmarks(in_dir,out_file)
+
+#in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
+#out_file = "/nfshome/hlamba/HighDim_OL/Results/HSTrees_50.txt"
+#run_for_consolidated_benchmarks(in_dir,out_file)
