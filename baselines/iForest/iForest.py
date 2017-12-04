@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import average_precision_score, roc_auc_score
+from sklearn.metrics.ranking import auc
 
 #DATA_DIR = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets"
 DATA_DIR  = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
@@ -70,4 +71,5 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
 in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
 out_file = "/nfshome/hlamba/HighDim_OL/Results/IForest_50.txt"
 run_for_consolidated_benchmarks(in_dir,out_file)
+
     

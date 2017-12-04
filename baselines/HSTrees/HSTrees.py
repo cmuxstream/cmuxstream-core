@@ -669,6 +669,8 @@ class HSTrees(object):
         rnd_int = self.random_state.randint(42)
         trees = p.map(hstree_fit, [(max_depth, X, rnd_int + i) for i in range(n_trees)])
         p.close()
+        p.join()
+        
         return trees
 
     def fit(self, X, y=None, sample_weight=None):
