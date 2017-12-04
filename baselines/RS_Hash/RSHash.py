@@ -50,7 +50,6 @@ class RSHash(object):
         V = np.random.choice(range(self.X.shape[1]),r,replace=False)
         
         # Randomly sample dataset S of s points.
-        print "Selecting:"+str(self.s)+" points out of:"+str(self.X.shape[0])
         selected_indexes = np.random.choice(range(self.X.shape[0]), self.s, replace=False)
         S = self.X[selected_indexes,:]
         
