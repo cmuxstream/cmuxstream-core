@@ -18,7 +18,7 @@ class RSHash(object):
                  verbose=0):
         self.m = num_components
         self.w = num_hash_fns
-        self.s = sampling_points
+        self.s = min(sampling_points,data.shape[0])
         self.X = data
         self.labels = labels
         self.scores = []
@@ -50,6 +50,7 @@ class RSHash(object):
         V = np.random.choice(range(self.X.shape[1]),r,replace=False)
         
         # Randomly sample dataset S of s points.
+        print "Selecting:"+str(self.s)+" points out of:"+str(self.X.shape[0])
         selected_indexes = np.random.choice(range(self.X.shape[0]), self.s, replace=False)
         S = self.X[selected_indexes,:]
         
