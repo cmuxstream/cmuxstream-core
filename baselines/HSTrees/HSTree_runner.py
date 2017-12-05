@@ -29,6 +29,7 @@ def run_HSTrees(X, labels):
     print "Classifier Fit."
     scores = clf.decision_function(X)
     auc, ap = compute_statistics(scores, labels)
+    del clf
     return auc, ap
         
 def get_index(in_file):
