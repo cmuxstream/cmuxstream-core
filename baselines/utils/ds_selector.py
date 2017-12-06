@@ -61,10 +61,10 @@ def sampling_by_irrel(in_meta_file):
     all_sampled_ds=[]
     for i in range(len(df_pd_arr)):
         sampled_indexes=[]
-        sample1 = df_pd_arr[i][df_pd_arr[i].OriginalIrrel==1.0]
-        sample2 = df_pd_arr[i][df_pd_arr[i].OriginalIrrel==1.2]
-        sample3 = df_pd_arr[i][df_pd_arr[i].OriginalIrrel==1.5]
-        sample4 = df_pd_arr[i][df_pd_arr[i].OriginalIrrel==2.0]
+        sample1 = df_pd_arr[i][(df_pd_arr[i].OriginalIrrel==1.0) and (df_pd_arr[i].OriginalCluster==' none')]
+        sample2 = df_pd_arr[i][(df_pd_arr[i].OriginalIrrel==1.2) and (df_pd_arr[i].OriginalCluster==' none')]
+        sample3 = df_pd_arr[i][(df_pd_arr[i].OriginalIrrel==1.5) and (df_pd_arr[i].OriginalCluster==' none')]
+        sample4 = df_pd_arr[i][(df_pd_arr[i].OriginalIrrel==2.0) and (df_pd_arr[i].OriginalCluster==' none')]
         
         if(len(sample1)>0):
             sampled_indexes.append(int(sample1.sample(n=1)['Index']))
