@@ -47,6 +47,48 @@ def create_statistics(in_dir, map_file, out_file):
 
     fw.close()
 
+def sampling_by_irrel(in_meta_file):
+    df=pd.read_csv(in_meta_file)
+    df_pd_arr = []
+    df_pd_arr.append(df[df.OriginalPtDiff=='pd-0'])
+    df_pd_arr.append(df[df.OriginalPtDiff=='pd-1'])
+    df_pd_arr.append(df[df.OriginalPtDiff=='pd-2'])
+    df_pd_arr.append(df[df.OriginalPtDiff=='pd-3'])
+    df_pd_arr.append(df[df.OriginalPtDiff=='pd-4'])
+    df_pd_arr.append(df[df.OriginalPtDiff=='pd-5'])
+    print len(df_pd_arr)
+    
+    all_sampled_ds=[]
+    for i in range(len(df_pd_arr)):
+        sampled_indexes=[]
+        sample1 = df_pd_arr[i][(df_pd_arr[i].OriginalIrrel==1.0) & (df_pd_arr[i].OriginalCluster==' none')]
+        sample2 = df_pd_arr[i][(df_pd_arr[i].OriginalIrrel==1.2) & (df_pd_arr[i].OriginalCluster==' none')]
+        sample3 = df_pd_arr[i][(df_pd_arr[i].OriginalIrrel==1.5) & (df_pd_arr[i].OriginalCluster==' none')]
+        sample4 = df_pd_arr[i][(df_pd_arr[i].OriginalIrrel==2.0) & (df_pd_arr[i].OriginalCluster==' none')]
+        
+        if(len(sample1)>0):
+            sampled_indexes.append(int(sample1.sample(n=1)['Index']))
+        else:
+            sampled_indexes.append(None)
+        
+        if(len(sample2)>0):
+            sampled_indexes.append(int(sample2.sample(n=1)['Index']))
+        else:
+            sampled_indexes.append(None)
+        
+        if(len(sample3)>0):
+            sampled_indexes.append(int(sample3.sample(n=1)['Index']))
+        else:
+            sampled_indexes.append(None)
+            
+        if(len(sample4)>0):
+            sampled_indexes.append(int(sample4.sample(n=1)['Index']))
+        else:
+            sampled_indexes.append(None)
+            
+        all_sampled_ds.append(sampled_indexes)
+    return all_sampled_ds
+
 def sampling(in_meta_file):
     '''
     This code will read in the input meta file.
@@ -109,7 +151,8 @@ def sampling(in_meta_file):
 #                   "abalone_meta", "../Benchmarking_Dataset/ABALONE/benchmarking_meta_info.csv")
 
 def copy(in_dir, all_sampled_ds, out_dir):
-    ds_names=["HighSc","MedSc","LowSc","LowCl","MedCl","HighCl"]
+    #ds_names=["HighSc","MedSc","LowSc","LowCl","MedCl","HighCl"]
+    ds_names = ["Regular", "Irrel=1.2","Irrel=1.5","Irrel=2.0"]
     meta_info=[]
     for i in range(len(all_sampled_ds)):
         sampled_ds=all_sampled_ds[i]
@@ -119,8 +162,8 @@ def copy(in_dir, all_sampled_ds, out_dir):
                 info = str(sampled_ds[j])+"_"+str(diff_info)+"_"+str(ds_names[j])
                 meta_info.append(info)
                 index = "%04d" % sampled_ds[j]
-                src=os.path.join(in_dir,"parkinsons_benchmark_"+str(index)+".csv")
-                dst=os.path.join(out_dir,"parkinsons_benchmark_"+str(info)+".csv")
+                src=os.path.join(in_dir,"abalone_benchmark_"+str(index)+".csv")
+                dst=os.path.join(out_dir,"abalone_benchmark_"+str(info)+".csv")
                 
                 print "Copying:"+str(src)+" to "+str(dst)
                 copyfile(src, dst)
@@ -129,14 +172,14 @@ def copy(in_dir, all_sampled_ds, out_dir):
 #in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets/abalone/benchmarks"
 #out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets/abalone/consolidated"
 
-in_dir = "../Benchmarking_Dataset/PARKINSONS/benchmarks"
-map_file = "parkinsons_meta"
-out_file = "../Benchmarking_Dataset/PARKINSONS/benchmarking_meta_info"
-create_statistics(in_dir,map_file, out_file)
+in_dir = "../../../../Benchmarking_Dataset/ABALONE/benchmarks"
+map_file = "abalone_meta"
+out_file = "../../../../Benchmarking_Dataset/ABALONE/benchmarking_meta_info"
+#create_statistics(in_dir,map_file, out_file)
 
-in_meta_file = "../Benchmarking_Dataset/PARKINSONS/benchmarking_meta_info"
+in_meta_file = "../../../../Benchmarking_Dataset/ABALONE/benchmarking_meta_info"
 #in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets/abalone/benchmarks"
-out_dir = "../Benchmarking_Dataset/PARKINSONS/consolidated"
+out_dir = "../../../../Benchmarking_Dataset/ABALONE/irrel_consolidated"
 
-all_sampled_ds=sampling(in_meta_file)
+all_sampled_ds=sampling_by_irrel(in_meta_file)
 copy(in_dir, all_sampled_ds, out_dir)
