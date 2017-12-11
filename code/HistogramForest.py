@@ -7,15 +7,20 @@ from sklearn.random_projection import GaussianRandomProjection
 
 class Histogram:
 
-    def __init__(self, w, k):
+    def __init__(self, w, k, projections='sparse'):
         self.w = w
         self.b = np.random.rand(1) * w
         self.counts = {}
-        #self.projector = SparseRandomProjection(n_components=k,
-        #                                        density=1/3.0,
-        #                                        random_state=SEED)
-        self.projector = GaussianRandomProjection(n_components=k,
-                                                  random_state=SEED)
+        
+        if projections == 'sparse':
+            self.projector = SparseRandomProjection(n_components=k,
+                                                    density=1/3.0,
+                                                    random_state=SEED)
+        elif projections == 'gaussian':
+            self.projector = GaussianRandomProjection(n_components=k,
+                                                      random_state=SEED)
+        else:
+            raise Exception("Unknown projection type: " + projections)
 
     def fit(self, X):
         projected_X = self.projector.fit_transform(X) 

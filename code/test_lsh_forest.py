@@ -13,6 +13,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.random_projection import SparseRandomProjection
 from sklearn.metrics import precision_recall_curve, average_precision_score
 from sklearn.neighbors import NearestNeighbors
+import sys
 
 if __name__ == "__main__":
     data = loadmat("../data/synData.mat")
@@ -28,7 +29,8 @@ if __name__ == "__main__":
 
     bnns = []
     anns = []
-    rs = np.arange(1.0, 5.5, 0.5)
+    print "Exact nearest neighbors..."
+    rs = np.arange(2.0, 12.0, 2.0)
     for r in rs:
         print r
         nn = NearestNeighbors(metric='euclidean', n_jobs=-1)
@@ -56,12 +58,12 @@ if __name__ == "__main__":
     plt.xticks(np.arange(0.0, 2.0*len(rs), 2.0),
                rs)
     plt.grid()
-    plt.xlabel(r"Radius $r$")
-    plt.ylabel(r"No. of neighbors with distance $\leq r$")
-    plt.savefig("nn_exact.png", bbox_inches="tight")
-    
+    plt.xlabel(r"Radius $R$")
+    plt.ylabel(r"No. of neighbors $\leq R$")
+    plt.savefig("nn_exact.pdf", bbox_inches="tight")
+
     f, ax = plt.subplots()
-    rs = np.arange(1.0, 5.5, 0.5)
+    rs = np.arange(2.0, 12.0, 2.0)
     for r in rs:
         nn = NearestNeighbors(metric='euclidean', n_jobs=-1).fit(Xnoisy)
         s = [-float(len(l)) for l in nn.radius_neighbors(Xnoisy,
@@ -70,13 +72,15 @@ if __name__ == "__main__":
         precision, recall, _ = precision_recall_curve(y, s, pos_label=1)
         average_precision = average_precision_score(y, s)
         print "r:", r, "AP:", average_precision
-        plt.plot(recall, precision, lw=1, label="r=" + str(r))
+        plt.plot(recall, precision, lw=1,
+                 label="R=" + str(r) + " AP=" + '{:.3f}'.format(average_precision))
     plt.grid()
     plt.xlabel("Recall")
     plt.ylabel("Precision")
     plt.legend()
-    plt.savefig("nn_exact_pr.png", bbox_inches="tight")
+    plt.savefig("nn_exact_pr.pdf", bbox_inches="tight")
 
+    """
     print "LSHForest"
     depth = 10
     lf = LSHForest(ntrees=100, depth=depth)
@@ -110,12 +114,14 @@ if __name__ == "__main__":
     plt.xlabel("Recall")
     plt.ylabel("Precision")
     plt.savefig("nn_approx_pr.png", bbox_inches="tight")
+    """
     
     print "E2LSHForest"
-    ws = np.arange(1.0, 15.0, 1.0)
+    ws = np.arange(2.0, 12.0, 2.0)
     k = 25
     scores = np.zeros((Xnoisy.shape[0], len(ws)), dtype=np.float)
     for i, w in enumerate(ws):
+        print w
         lf = HistogramForest(ntrees=100, w=w, k=k)
         lf.fit(Xnoisy)
         scores[:,i] = lf.score(Xnoisy)
@@ -130,11 +136,11 @@ if __name__ == "__main__":
                boxprops={'color': '#377eb8'}, sym='', whis=[10,90],
                medianprops={'color': '#377eb8'})
     plt.xlim(-1, 2*len(ws))
-    plt.xticks(np.arange(0.0, 2.0*len(ws), 2.0), np.arange(len(ws)) + 1)
+    plt.xticks(np.arange(0.0, 2.0*len(ws), 2.0), ws)
     plt.grid()
     plt.xlabel(r"Bin-width $w$")
     plt.ylabel(r"No. of neighbors")
-    plt.savefig("nn_approx_hist.png", bbox_inches="tight")
+    plt.savefig("nn_approx_hist_k" + str(k) + ".pdf", bbox_inches="tight")
 
     f, ax = plt.subplots()
     for i, w in enumerate(ws):
@@ -142,10 +148,10 @@ if __name__ == "__main__":
         precision, recall, _ = precision_recall_curve(y, s, pos_label=1)
         average_precision = average_precision_score(y, s)
         print "w:", w, "AP:", average_precision
-        plt.plot(recall, precision, lw=1, label="d=" + str(w) + " AP=" +
-                 str(average_precision))
+        plt.plot(recall, precision, lw=1, label="w=" + str(w) + " AP=" +
+                 '{:.3f}'.format(average_precision))
     plt.grid()
     plt.xlabel("Recall")
     plt.ylabel("Precision")
     plt.legend()
-    plt.savefig("nn_approx_pr_hist.png", bbox_inches="tight")
+    plt.savefig("nn_approx_pr_k" + str(k) + ".pdf", bbox_inches="tight")
