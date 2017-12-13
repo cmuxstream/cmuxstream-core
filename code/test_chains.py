@@ -24,20 +24,20 @@ if __name__ == "__main__":
 
     print "Chains..."
     k = 50
-    nchains = 10
+    nchains = 20
     depth = 10
     depths = range(depth)
-    scores = np.zeros((Xnoisy.shape[0], depth), dtype=np.float)
+    bincounts = np.zeros((Xnoisy.shape[0], depth), dtype=np.float)
     cf = Chains(k=k, nchains=nchains, depth=depth)
     cf.fit(Xnoisy)
-    scores = cf.score(Xnoisy)
+    bincounts = cf.bincount(Xnoisy)
 
     f, ax = plt.subplots()
-    ax.boxplot([scores[anomalies,d] for d in depths],
+    ax.boxplot([bincounts[anomalies,d] for d in depths],
                positions=np.arange(0.0, 2.0*len(depths), 2.0),
                boxprops={'color': '#e41a1c'}, sym='', whis=[10,90],
                medianprops={'color': '#e41a1c'})
-    ax.boxplot([scores[~anomalies,d] for d in depths],
+    ax.boxplot([bincounts[~anomalies,d] for d in depths],
                positions=np.arange(1.0, 2.0*len(depths)+1, 2.0),
                boxprops={'color': '#377eb8'}, sym='', whis=[10,90],
                medianprops={'color': '#377eb8'})
@@ -46,22 +46,23 @@ if __name__ == "__main__":
     plt.grid()
     plt.xlabel(r"Depth $d$")
     plt.ylabel(r"No. of neighbors")
-    plt.savefig("chains_hist_k" + str(k) +
+    plt.savefig("chains_bincount_hist_k" + str(k) +
                 "c" + str(nchains) + "d" + str(depth) + ".pdf",
                 bbox_inches="tight")
 
     f, ax = plt.subplots()
     for i, d in enumerate(np.arange(0, 10, 1)):
-        s = -scores[:,d]
+        s = -bincounts[:,d]
         precision, recall, _ = precision_recall_curve(y, s, pos_label=1)
         average_precision = average_precision_score(y, s)
         print "d:", d, "AP:", average_precision
         plt.plot(recall, precision, lw=1, label="d=" + str(d) + " AP=" +
                  '{:.3f}'.format(average_precision))
     plt.grid()
+    plt.title("Scores = Bin-counts")
     plt.xlabel("Recall")
     plt.ylabel("Precision")
     plt.legend(loc='lower left')
-    plt.savefig("chains_pr_k" + str(k) +
+    plt.savefig("chains_bincount_pr_k" + str(k) +
                 "c" + str(nchains) + "d" + str(depth) + ".pdf",
                 bbox_inches="tight")
