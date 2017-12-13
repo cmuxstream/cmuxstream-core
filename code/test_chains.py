@@ -9,7 +9,6 @@ import numpy as np
 from scipy.io import loadmat
 from scipy.spatial.distance import pdist
 from sklearn.ensemble import IsolationForest
-from sklearn.random_projection import SparseRandomProjection
 from sklearn.metrics import precision_recall_curve, average_precision_score
 from sklearn.neighbors import NearestNeighbors
 import sys
