@@ -40,7 +40,7 @@ class Chain:
                 cmsketch[l] += 1
             self.cmsketches[depth] = cmsketch
 
-    def score(self, X):
+    def bincount(self, X):
         scores = np.zeros((X.shape[0], self.depth))
 
         ndim = X.shape[1]
@@ -70,6 +70,27 @@ class Chain:
 
         return scores
 
+    def lociscore(self, X):
+        scores = self.bincount(X)
+
+        multiplier = np.array([2.0 ** d for d in range(1, self.depth+1)])
+        scores *= multiplier
+
+        indices = np.arange(scores.shape[0])
+
+        lociscores = np.zeros(scores.shape, dtype=np.float)
+        for i in range(X.shape[0]):
+            score_i = scores[i,:]
+            mean_score_j = np.mean(scores[indices!=i, :])
+            lociscores[i,:] = score_i - mean_score_j
+
+        return lociscores
+
+    def score(self, X):
+        lociscores = self.lociscore(X)
+        scores = np.max(lociscores, axis=1)
+        return scores
+
 class Chains:
     def __init__(self, k=50, nchains=100, depth=25, projections='sparse'):
         self.nchains = nchains
@@ -95,9 +116,25 @@ class Chains:
             c.fit(projected_X)
             self.chains.append(c)
 
-    def score(self, X):
+    def bincount(self, X):
         projected_X = self.projector.transform(X)
         scores = np.zeros((X.shape[0], self.depth))
+        for i, chain in enumerate(self.chains):
+            scores += chain.bincount(projected_X)
+        scores /= float(self.nchains)
+        return scores
+
+    def lociscore(self, X):
+        projected_X = self.projector.transform(X)
+        scores = np.zeros((X.shape[0], self.depth))
+        for i, chain in enumerate(self.chains):
+            scores += chain.lociscore(projected_X)
+        scores /= float(self.nchains)
+        return scores
+
+    def score(self, X):
+        projected_X = self.projector.transform(X)
+        scores = np.zeros(X.shape[0])
         for i, chain in enumerate(self.chains):
             scores += chain.score(projected_X)
         scores /= float(self.nchains)
