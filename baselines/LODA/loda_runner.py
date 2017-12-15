@@ -32,7 +32,8 @@ def run_LODA(X, labels):
             model.w, model.hists, model.hpdfs, model.nlls, model.proj_wts
         )
     
-    return compute_statistics(model.anom_score, labels), model.anom_score
+    auc, ap = compute_statistics(model.anom_score, labels)
+    return auc, ap, model.anom_score
     
 def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
     fw=open(out_file,'w')
@@ -74,7 +75,7 @@ def run_for_syn_data(num_runs, out_file):
         score_arr.append(scores)
         fw.write(str(auc)+"\t"+str(ap)+"\n")
     fw.close()
-    pickle.dump(score_arr, out_file2)
+    pickle.dump(score_arr, open(out_file2,"w"))
     
 #ds_name = "abalone"
 #run_for_benchmarks(ds_name)

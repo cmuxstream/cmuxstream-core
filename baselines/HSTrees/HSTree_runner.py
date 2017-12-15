@@ -95,7 +95,7 @@ def run_for_syn_data(num_runs, out_file):
         score_arr.append(scores)
         fw.write(str(auc)+"\t"+str(ap)+"\n")
     fw.close()
-    pickle.dump(score_arr, out_file2)
+    pickle.dump(score_arr, open(out_file2,"w"))
     
 #ds_name = "abalone"
 #run_for_benchmarks(ds_name)
