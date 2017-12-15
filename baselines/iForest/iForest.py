@@ -86,7 +86,7 @@ def run_for_syn_data(num_runs, out_file):
         auc, ap = run_IForest(X, y)
         auc_arr.append(auc)
         ap_arr.append(ap)
-    fw.write(str(in_file)+","+str(np.mean(auc_arr))+","+str(np.std(auc_arr))+","+str(np.mean(ap_arr))+","+str(np.std(ap_arr))+"\n")
+        fw.write(str(auc)+"\t"+str(ap)+"\n")
     fw.close()
     
 #ds_name = "abalone"
