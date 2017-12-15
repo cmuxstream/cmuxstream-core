@@ -66,10 +66,37 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
         fw.write(str(in_file)+","+str(np.mean(auc_arr))+","+str(np.std(auc_arr))+","+str(np.mean(ap_arr))+","+str(np.std(ap_arr))+"\n")
     fw.close()
 
+def run_for_syn_data(num_runs, out_file):
+    fw=open(out_file, 'w')
+    data = loadmat("../data/synData.mat")
+    X = data['X']
+    y = data['y'].ravel()
+
+    X = MinMaxScaler().fit_transform(X)
+    
+    Xnoisy = np.concatenate((X, np.random.normal(loc=0.5, scale=0.05, size=(X.shape[0], 100))), axis=1)
+    X = Xnoisy
+    auc_arr = []
+    ap_arr = []
+    for i in range(num_runs):
+        if(i%5==0):
+            print i
+        auc, ap = run_IForest(X, y)
+        auc_arr.append(auc)
+        ap_arr.append(ap)
+    fw.write(str(in_file)+","+str(np.mean(auc_arr))+","+str(np.std(auc_arr))+","+str(np.mean(ap_arr))+","+str(np.std(ap_arr))+"\n")
+    fw.close()
+    
+#ds_name = "abalone"
+#run_for_benchmarks(ds_name)
+#in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
+out_file = "../../Results/iForest_100.txt"
+#run_for_consolidated_benchmarks(in_dir,out_file)
+run_for_syn_data(100, out_file)
 #run_for_benchmarks(ds_name)
 #run_IForest(X, labels)
-in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
-out_file = "/nfshome/hlamba/HighDim_OL/Results/IForest_50.txt"
-run_for_consolidated_benchmarks(in_dir,out_file)
+#in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
+#out_file = "/nfshome/hlamba/HighDim_OL/Results/IForest_50.txt"
+#run_for_consolidated_benchmarks(in_dir,out_file)
 
     
