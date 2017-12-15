@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score, roc_auc_score
+from scipy.io import loadmat
 
 DATA_DIR  = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
 
@@ -141,7 +142,7 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
 
 def run_for_syn_data(num_runs, out_file):
     fw=open(out_file, 'w')
-    data = loadmat("../data/synData.mat")
+    data = loadmat("../../data/synData.mat")
     X = data['X']
     y = data['y'].ravel()
 

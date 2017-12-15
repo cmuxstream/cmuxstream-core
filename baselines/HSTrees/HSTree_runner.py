@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import average_precision_score, roc_auc_score
+from scipy.io import loadmat
 from HSTrees import HSTrees
 
 DATA_DIR = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets/"
@@ -71,7 +72,7 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=10):
 
 def run_for_syn_data(num_runs, out_file):
     fw=open(out_file, 'w')
-    data = loadmat("../data/synData.mat")
+    data = loadmat("../../data/synData.mat")
     X = data['X']
     y = data['y'].ravel()
 

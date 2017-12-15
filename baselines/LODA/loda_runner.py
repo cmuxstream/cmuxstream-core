@@ -6,6 +6,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 from loda import *
 from loda_support import *
 from ensemble_support import *
+from scipy.io import loadmat
 
 def read_dataset(filename):
     df = pd.read_csv(filename)
@@ -49,7 +50,7 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
 
 def run_for_syn_data(num_runs, out_file):
     fw=open(out_file, 'w')
-    data = loadmat("../data/synData.mat")
+    data = loadmat("../../data/synData.mat")
     X = data['X']
     y = data['y'].ravel()
 
