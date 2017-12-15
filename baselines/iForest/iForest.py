@@ -7,6 +7,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.metrics.ranking import auc
 from sklearn.preprocessing import MinMaxScaler, scale
 from scipy.io import loadmat
+import pickle
 
 #DATA_DIR = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets"
 DATA_DIR  = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
@@ -30,7 +31,7 @@ def run_IForest(X, labels):
     clf.fit(X, labels)
     scores = clf.decision_function(X)
     auc, ap = compute_statistics(scores, labels)
-    return auc, ap
+    return auc, ap, scores
         
 def get_index(in_file):
     in_file = in_file[in_file.rfind("_")+1:len(in_file)]
@@ -69,6 +70,7 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
     fw.close()
 
 def run_for_syn_data(num_runs, out_file):
+    out_file2=out_file+"_Scores.pkl"
     fw=open(out_file, 'w')
     data = loadmat("../../data/synData.mat")
     X = data['X']
@@ -80,19 +82,22 @@ def run_for_syn_data(num_runs, out_file):
     X = Xnoisy
     auc_arr = []
     ap_arr = []
+    score_arr=[]
     for i in range(num_runs):
         if(i%5==0):
             print i
-        auc, ap = run_IForest(X, y)
+        auc, ap, scores = run_IForest(X, y)
         auc_arr.append(auc)
         ap_arr.append(ap)
+        score_arr.append(scores)
         fw.write(str(auc)+"\t"+str(ap)+"\n")
     fw.close()
+    pickle.dump(score_arr, out_file2)
     
 #ds_name = "abalone"
 #run_for_benchmarks(ds_name)
 #in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
-out_file = "../../Results/iForest_100.txt"
+out_file = "../../Results/iForest_100"
 #run_for_consolidated_benchmarks(in_dir,out_file)
 run_for_syn_data(100, out_file)
 #run_for_benchmarks(ds_name)

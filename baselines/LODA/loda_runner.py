@@ -8,6 +8,7 @@ from loda import *
 from loda_support import *
 from ensemble_support import *
 from scipy.io import loadmat
+import pickle
 
 def read_dataset(filename):
     df = pd.read_csv(filename)
@@ -31,7 +32,7 @@ def run_LODA(X, labels):
             model.w, model.hists, model.hpdfs, model.nlls, model.proj_wts
         )
     
-    return compute_statistics(model.anom_score, labels)
+    return compute_statistics(model.anom_score, labels), model.anom_score
     
 def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
     fw=open(out_file,'w')
@@ -51,6 +52,8 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
 
 def run_for_syn_data(num_runs, out_file):
     fw=open(out_file, 'w')
+    out_file2=out_file+"_Scores.pkl"
+    
     data = loadmat("../../data/synData.mat")
     X = data['X']
     y = data['y'].ravel()
@@ -61,14 +64,17 @@ def run_for_syn_data(num_runs, out_file):
     X = Xnoisy
     auc_arr = []
     ap_arr = []
+    score_arr = []
     for i in range(num_runs):
         if(i%5==0):
             print i
-        auc, ap = run_LODA(X, y)
+        auc, ap, scores = run_LODA(X, y)
         auc_arr.append(auc)
         ap_arr.append(ap)
+        score_arr.append(scores)
         fw.write(str(auc)+"\t"+str(ap)+"\n")
     fw.close()
+    pickle.dump(score_arr, out_file2)
     
 #ds_name = "abalone"
 #run_for_benchmarks(ds_name)

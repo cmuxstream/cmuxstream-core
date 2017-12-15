@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.preprocessing import MinMaxScaler, scale
 from scipy.io import loadmat
+import pickle
 
 DATA_DIR  = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
 
@@ -123,7 +124,7 @@ def run_RSHash(X, labels):
     anomaly_scores = np.mean(rs_obj.scores,axis=0)
     ap = average_precision_score(labels, anomaly_scores)
     auc = roc_auc_score(labels, anomaly_scores)
-    return auc, ap
+    return auc, ap, anomaly_scores
 
 def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
     fw=open(out_file,'w')
@@ -143,6 +144,7 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
 
 def run_for_syn_data(num_runs, out_file):
     fw=open(out_file, 'w')
+    out_file2=out_file+"_Scores.pkl"
     data = loadmat("../../data/synData.mat")
     X = data['X']
     y = data['y'].ravel()
@@ -153,14 +155,17 @@ def run_for_syn_data(num_runs, out_file):
     X = Xnoisy
     auc_arr = []
     ap_arr = []
+    score_arr = []
     for i in range(num_runs):
         if(i%5==0):
             print i
-        auc, ap = run_RSHash(X, y)
+        auc, ap, scores = run_RSHash(X, y)
         auc_arr.append(auc)
         ap_arr.append(ap)
+        score_arr.append(scores)
         fw.write(str(auc)+"\t"+str(ap)+"\n")
     fw.close()
+    pickle.dump(score_arr, out_file2)
     
 #ds_name = "abalone"
 #run_for_benchmarks(ds_name)
