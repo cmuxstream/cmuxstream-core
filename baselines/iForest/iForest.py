@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.metrics.ranking import auc
+from sklearn.preprocessing import MinMaxScaler, scale
 from scipy.io import loadmat
 
 #DATA_DIR = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets"

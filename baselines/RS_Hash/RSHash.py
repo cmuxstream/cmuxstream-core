@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score, roc_auc_score
+from sklearn.preprocessing import MinMaxScaler, scale
 from scipy.io import loadmat
 
 DATA_DIR  = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"

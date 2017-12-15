@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import average_precision_score, roc_auc_score
+from sklearn.preprocessing import MinMaxScaler, scale
 from scipy.io import loadmat
 from HSTrees import HSTrees
 

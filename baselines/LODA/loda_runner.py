@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score, roc_auc_score
+from sklearn.preprocessing import MinMaxScaler, scale
 from loda import *
 from loda_support import *
 from ensemble_support import *
