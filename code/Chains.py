@@ -88,7 +88,7 @@ class Chain:
 
     def score(self, X):
         lociscores = self.lociscore(X)
-        scores = np.max(lociscores, axis=1)
+        scores = np.min(lociscores, axis=1)
         return scores
 
 class Chains:
