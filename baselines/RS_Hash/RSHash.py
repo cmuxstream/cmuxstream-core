@@ -130,15 +130,17 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
     fw=open(out_file,'w')
     list_files = os.listdir(in_dir)
     for in_file in list_files:
+        print "Reading:"+str(in_file)
         X, labels = read_dataset(os.path.join(in_dir,in_file))
         auc_arr = []
         ap_arr = []
         for i in range(num_runs):
             if(i%5==0):
-                print i
+                print "\t\t"+str(i)
             auc, ap = run_RSHash(X, labels)
             auc_arr.append(auc)
             ap_arr.append(ap)
+            fw.write(str(i)+"\t"+str(auc)+"\t"+str(ap)+"\n")
         fw.write(str(in_file)+","+str(np.mean(auc_arr))+","+str(np.std(auc_arr))+","+str(np.mean(ap_arr))+","+str(np.std(ap_arr))+"\n")
     fw.close()
 
@@ -170,11 +172,13 @@ def run_for_syn_data(num_runs, out_file):
 #ds_name = "abalone"
 #run_for_benchmarks(ds_name)
 #in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
-out_file = "../../Results/RSHash_100.txt"
+#out_file = "../../Results/RSHash_100.txt"
 #run_for_consolidated_benchmarks(in_dir,out_file)
-run_for_syn_data(100, out_file)
+#run_for_syn_data(100, out_file)
 #in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
 #out_file = "/nfshome/hlamba/HighDim_OL/Results/RSHash_50.txt"
 #run_for_consolidated_benchmarks(in_dir,out_file)
-    
+in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
+out_file = "../../../Results/Results_Irrel/NEW_RSHash_50.txt"
+run_for_consolidated_benchmarks(in_dir,out_file,50)   
     

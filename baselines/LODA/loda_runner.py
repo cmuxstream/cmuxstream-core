@@ -25,44 +25,46 @@ def compute_statistics(scores, labels):
     return auc, avg_precision
 
 def run_LODA(X, labels):
-    lodares = loda(X, sparsity=0.3, mink=1, maxk=10)
+    lodares = loda(X, sparsity=0.3, mink=1, maxk=103)
     model = generate_model_from_loda_result(lodares, X, labels)
     anoms, lbls, _, _, _, detector_scores, detector_wts = (
             model.anoms, model.lbls,
             model.w, model.hists, model.hpdfs, model.nlls, model.proj_wts
         )
-    
-    auc, ap = compute_statistics(model.anom_score, labels)
+    auc, ap = compute_statistics(lodares.nll, labels)
+    print auc, ap
     return auc, ap, model.anom_score
     
-def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
+def run_for_consolidated_benchmarks(in_dir, out_file, num_runs):
     fw=open(out_file,'w')
     list_files = os.listdir(in_dir)
     for in_file in list_files:
+        print "Running for:"+str(in_file)
         X, labels = read_dataset(os.path.join(in_dir,in_file))
         auc_arr = []
         ap_arr = []
         for i in range(num_runs):
             if(i%5==0):
-                print i
+                print "\t\t"+str(i)
             auc, ap = run_LODA(X, labels)
             auc_arr.append(auc)
             ap_arr.append(ap)
-        fw.write(str(in_file)+","+str(np.mean(auc_arr))+","+str(np.std(auc_arr))+","+str(np.mean(ap_arr))+","+str(np.std(ap_arr))+"\n")
+            fw.write(str(i)+"\t"+str(auc)+"\t"+str(ap)+"\n")
+    fw.write(str(in_file)+","+str(np.mean(auc_arr))+","+str(np.std(auc_arr))+","+str(np.mean(ap_arr))+","+str(np.std(ap_arr))+"\n")
     fw.close()
 
 def run_for_syn_data(num_runs, out_file):
     fw=open(out_file, 'w')
     out_file2=out_file+"_Scores.pkl"
     
-    data = loadmat("../../data/synData.mat")
+    data = loadmat("../../data/synDataNoisy.mat")
     X = data['X']
     y = data['y'].ravel()
 
-    X = MinMaxScaler().fit_transform(X)
+    #X = MinMaxScaler().fit_transform(X)
     
-    Xnoisy = np.concatenate((X, np.random.normal(loc=0.5, scale=0.05, size=(X.shape[0], 100))), axis=1)
-    X = Xnoisy
+    #Xnoisy = np.concatenate((X, np.random.normal(loc=0.5, scale=0.05, size=(X.shape[0], 100))), axis=1)
+    #X = Xnoisy
     auc_arr = []
     ap_arr = []
     score_arr = []
@@ -80,10 +82,11 @@ def run_for_syn_data(num_runs, out_file):
 #ds_name = "abalone"
 #run_for_benchmarks(ds_name)
 #in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
-out_file = "../../Results/LODA_100.txt"
-#run_for_consolidated_benchmarks(in_dir,out_file)
-run_for_syn_data(100, out_file)    
-#in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
+
+in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
+out_file = "../../../Results/Results_Irrel/NEW_LODA_50.txt"
+run_for_consolidated_benchmarks(in_dir,out_file,50)
+#run_for_syn_data(100, out_file)    
 #out_file = "/nfshome/hlamba/HighDim_OL/Results/LODA_50.txt"
 #run_for_consolidated_benchmarks(in_dir,out_file)
     
