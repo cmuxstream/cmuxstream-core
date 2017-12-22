@@ -103,10 +103,36 @@ def run_for_syn_data(num_runs, out_file):
     fw.close()
     pickle.dump(score_arr, open(out_file2,"w"))
     
+def run_for_dataset(in_file, out_file, num_runs):
+    fw=open(out_file,'w')
+    out_file2=out_file+"_Scores.pkl"
+    print "Doing for:"+str(in_file)
+    X, labels = read_dataset(os.path.join(in_dir,in_file))
+    auc_arr = []
+    ap_arr = []
+    score_arr = []
+    for i in range(num_runs):
+        if(i%5==0):
+            print "\t\t"+str(i)
+        auc, ap, scores = run_HSTrees(X, labels)
+        auc_arr.append(auc)
+        ap_arr.append(ap)
+        score_arr.append(scores)
+        fw.write(str(i)+"\t"+str(auc)+"\t"+str(ap)+"\n")
+    fw.write(str(np.mean(auc_arr))+","+str(np.std(auc_arr))+","+str(np.mean(ap_arr))+","+str(np.std(ap_arr))+"\n")
+    fw.close()
+    pickle.dump(score_arr, open(out_file2,"w"))
 #ds_name = "abalone"
 #run_for_benchmarks(ds_name)
 #in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
+#run_for_consolidated_benchmarks(in_dir,out_file,10)
 
 in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
-out_file = "../../../Results_Irrel/NEW_HSTrees_10.txt"
-run_for_consolidated_benchmarks(in_dir,out_file,10)
+out_dir = "../../Results_Irrel/NEW_HSTrees"
+
+print "Running HS-Trees"
+file_name = sys.argv[1]
+num_runs = int(sys.argv[2])
+in_file = os.path.join(in_dir,file_name)
+out_file = os.path.join(out_dir, file_name)
+run_for_dataset(in_file, out_file, num_runs)
