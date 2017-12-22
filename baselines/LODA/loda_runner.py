@@ -33,9 +33,10 @@ def run_LODA(X, labels):
         )
     auc, ap = compute_statistics(lodares.nll, labels)
     print auc, ap
-    return auc, ap, model.anom_score
+    return auc, ap, lodares.nll
     
 def run_for_consolidated_benchmarks(in_dir, out_file, num_runs):
+    out_file2=out_file+"_Scores.pkl"
     fw=open(out_file,'w')
     list_files = os.listdir(in_dir)
     for in_file in list_files:
@@ -43,15 +44,18 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs):
         X, labels = read_dataset(os.path.join(in_dir,in_file))
         auc_arr = []
         ap_arr = []
+        score_arr = []
         for i in range(num_runs):
             if(i%5==0):
                 print "\t\t"+str(i)
-            auc, ap = run_LODA(X, labels)
+            auc, ap, scores = run_LODA(X, labels)
             auc_arr.append(auc)
             ap_arr.append(ap)
+            score_arr.append(scores)
             fw.write(str(i)+"\t"+str(auc)+"\t"+str(ap)+"\n")
     fw.write(str(in_file)+","+str(np.mean(auc_arr))+","+str(np.std(auc_arr))+","+str(np.mean(ap_arr))+","+str(np.std(ap_arr))+"\n")
     fw.close()
+    pickle.dump(score_arr, open(out_file2,"w"))
 
 def run_for_syn_data(num_runs, out_file):
     fw=open(out_file, 'w')
