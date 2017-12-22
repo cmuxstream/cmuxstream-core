@@ -13,10 +13,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.metrics import precision_recall_curve, average_precision_score
 from sklearn.neighbors import NearestNeighbors
 import sys
-
-cwd = os.getcwd()
-sys.path.insert(0, cwd + '/../baselines/LODA/')
-import loda, ensemble_support
+import loda
 
 if __name__ == "__main__":
     data = loadmat("../data/synDataNoisy.mat")
@@ -25,37 +22,38 @@ if __name__ == "__main__":
     anomalies = y == 1
 
     # chains
-    k = 25
-    nchains = 10
-    depth = 10
-    print "Chains:", k, nchains, depth
+    chains_ap = []
+    loda_ap = []
+    for i in range(5):
+        print "Trial", i
 
-    cf = Chains(k=k, nchains=nchains, depth=depth)
-    cf.fit(X)
-    print "Scoring..."
-    anomalyscores = -cf.score(X)
+        # chains
+        k = 50
+        nchains = 50
+        depth = 10
+        cf = Chains(k=k, nchains=nchains, depth=depth, projections='gaussian')
+        cf.fit(X)
+        anomalyscores = -cf.score(X)
 
-    # loda
-    print "LODA..."
-    lodares = loda.loda(X, sparsity=0.3, mink=1, maxk=25)
-    model = ensemble_support.generate_model_from_loda_result(lodares, X, y)
-    lodascores = model.anom_score
+        l = loda.LODA(nbins=30, nhistograms=50)
+        l.fit(X)
+        lodascores = l.score(X) # negative loglikelihood
+
+        average_precision = average_precision_score(y, anomalyscores)
+        chains_ap.append(average_precision)
+        average_precision = average_precision_score(y, lodascores)
+        loda_ap.append(average_precision)
+
+    print "Mean LODA AP:", np.mean(loda_ap), np.std(loda_ap)
+    print "Mean chains AP:", np.mean(chains_ap), np.std(chains_ap)
 
     f, ax = plt.subplots()
-
-    # chains
     precision, recall, _ = precision_recall_curve(y, anomalyscores, pos_label=1)
-    average_precision = average_precision_score(y, anomalyscores)
     plt.plot(recall, precision, label="Chains AP=" +
              '{:.3f}'.format(average_precision))
-    print "\tChains AP:", average_precision
-
-    # LODA
     precision, recall, _ = precision_recall_curve(y, lodascores, pos_label=1)
-    average_precision = average_precision_score(y, lodascores)
     plt.plot(recall, precision, label="LODA AP=" +
              '{:.3f}'.format(average_precision))
-    print "\tLODA AP:", average_precision
 
     plt.grid()
     plt.xlabel("Recall")
