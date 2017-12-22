@@ -88,7 +88,7 @@ def run_for_syn_data(num_runs, out_file):
 #in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
 
 in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
-out_file = "../../../Results/Results_Irrel/NEW_LODA_50.txt"
+out_file = "../../../Results_Irrel/NEW_LODA_50.txt"
 run_for_consolidated_benchmarks(in_dir,out_file,50)
 #run_for_syn_data(100, out_file)    
 #out_file = "/nfshome/hlamba/HighDim_OL/Results/LODA_50.txt"

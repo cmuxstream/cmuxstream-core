@@ -69,7 +69,7 @@ def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=10):
         for i in range(num_runs):
             if(i%5==0):
                 print "\t\t"+str(i)
-            auc, ap = run_HSTrees(X, labels)
+            auc, ap, scores = run_HSTrees(X, labels)
             auc_arr.append(auc)
             ap_arr.append(ap)
             score_arr.append(scores)

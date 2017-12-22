@@ -183,6 +183,5 @@ def run_for_syn_data(num_runs, out_file):
 #out_file = "/nfshome/hlamba/HighDim_OL/Results/RSHash_50.txt"
 #run_for_consolidated_benchmarks(in_dir,out_file)
 in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
-out_file = "../../../Results/Results_Irrel/NEW_RSHash_50.txt"
-run_for_consolidated_benchmarks(in_dir,out_file,50)   
-    
+out_file = "../../../Results_Irrel/NEW_RSHash_50.txt"
+run_for_consolidated_benchmarks(in_dir,out_file,50)    
