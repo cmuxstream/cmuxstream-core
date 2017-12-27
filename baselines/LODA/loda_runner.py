@@ -10,6 +10,15 @@ from ensemble_support import *
 from scipy.io import loadmat
 import pickle
 
+def read_dataset2(filename):
+    data = np.loadtxt(filename, delimiter=',')
+    n,m = data.shape
+    X = data[:,0:m-1]
+    y = data[:,m-1]
+    print n,m, X.shape, y.shape
+    
+    return X,y
+
 def read_dataset(filename):
     df = pd.read_csv(filename)
     pt_ids = np.array(df['point.id'])
@@ -25,12 +34,13 @@ def compute_statistics(scores, labels):
     return auc, avg_precision
 
 def run_LODA(X, labels):
-    lodares = loda(X, sparsity=0.3, mink=1, maxk=103)
-    model = generate_model_from_loda_result(lodares, X, labels)
-    anoms, lbls, _, _, _, detector_scores, detector_wts = (
-            model.anoms, model.lbls,
-            model.w, model.hists, model.hpdfs, model.nlls, model.proj_wts
-        )
+    #lodares = loda(X, sparsity=0.3, mink=1, maxk=103)
+    lodares = loda(X)
+    #model = generate_model_from_loda_result(lodares, X, labels)
+    #anoms, lbls, _, _, _, detector_scores, detector_wts = (
+    #        model.anoms, model.lbls,
+    #        model.w, model.hists, model.hpdfs, model.nlls, model.proj_wts
+    #    )
     auc, ap = compute_statistics(lodares.nll, labels)
     print auc, ap
     return auc, ap, lodares.nll
@@ -98,7 +108,7 @@ def run_for_dataset(in_file, out_file, num_runs):
     fw=open(out_file,'w')
     out_file2=out_file+"_Scores.pkl"
     print "Doing for:"+str(in_file)
-    X, labels = read_dataset(os.path.join(in_dir,in_file))
+    X, labels = read_dataset2(os.path.join(in_dir,in_file))
     auc_arr = []
     ap_arr = []
     score_arr = []
@@ -114,9 +124,10 @@ def run_for_dataset(in_file, out_file, num_runs):
     fw.close()
     pickle.dump(score_arr, open(out_file2,"w"))
         
-in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
-out_dir = "../../Results_Irrel/NEW_LODA"
-
+#in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
+#out_dir = "../../Results_Irrel/NEW_LODA"
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/temp"
 print "Running LODA"
 file_name = sys.argv[1]
 num_runs = int(sys.argv[2])

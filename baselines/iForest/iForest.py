@@ -12,6 +12,14 @@ import pickle
 #DATA_DIR = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets"
 DATA_DIR  = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
 
+def read_dataset2(filename):
+    data = np.loadtxt(filename, delimiter=',')
+    n,m = data.shape
+    X = data[:,0:m-1]
+    y = data[:,m-1]
+    print n,m, X.shape, y.shape
+    return X,y
+
 def read_dataset(filename):
     df = pd.read_csv(filename)
     pt_ids = np.array(df['point.id'])
@@ -30,7 +38,7 @@ def run_IForest(X, labels):
     clf = IsolationForest(n_estimators = 100)
     clf.fit(X, labels)
     scores = clf.decision_function(X)
-    auc, ap = compute_statistics(scores, labels)
+    auc, ap = compute_statistics(-scores, labels)
     return auc, ap, scores
         
 def get_index(in_file):
@@ -104,7 +112,7 @@ def run_for_dataset(in_file, out_file, num_runs):
     fw=open(out_file,'w')
     out_file2=out_file+"_Scores.pkl"
     print "Doing for:"+str(in_file)
-    X, labels = read_dataset(os.path.join(in_dir,in_file))
+    X, labels = read_dataset2(os.path.join(in_dir,in_file))
     auc_arr = []
     ap_arr = []
     score_arr = []
@@ -112,6 +120,7 @@ def run_for_dataset(in_file, out_file, num_runs):
         if(i%5==0):
             print "\t\t"+str(i)
         auc, ap, scores = run_IForest(X, labels)
+        print auc, ap
         auc_arr.append(auc)
         ap_arr.append(ap)
         score_arr.append(scores)
@@ -133,10 +142,20 @@ def run_for_dataset(in_file, out_file, num_runs):
 #out_file = "/nfshome/hlamba/HighDim_OL/Results/IForest_50.txt"
 #run_for_consolidated_benchmarks(in_dir,out_file)
 
-in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
-out_dir = "../../Results_Irrel/NEW_iForest"
+#in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
+#out_dir = "../../Results_Irrel/NEW_iForest"
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Consolidated_Irrel"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Results/Results_Irrel/New_iForest"
 
-print "Running iForest"
+#in_file = os.path.join(in_dir,file_name)
+#out_file = os.path.join(out_dir, file_name)
+#run_for_dataset(in_file, out_file, num_runs)
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/HighDim"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/iForest/HighDim"
+
+#in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Original"
+#out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/iForest/Orig"
+
 file_name = sys.argv[1]
 num_runs = int(sys.argv[2])
 in_file = os.path.join(in_dir,file_name)

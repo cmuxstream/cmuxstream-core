@@ -9,6 +9,11 @@ import pickle
 
 DATA_DIR  = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
 
+def compute_statistics(scores, labels):
+    avg_precision = average_precision_score(labels, scores)
+    auc = roc_auc_score(labels, scores)
+    return auc, avg_precision
+
 class RSHash(object):
     
     def __init__(self,
@@ -122,8 +127,7 @@ def run_RSHash(X, labels):
     rs_obj = RSHash(X,labels)
     rs_obj.multi_runs()
     anomaly_scores = np.mean(rs_obj.scores,axis=0)
-    ap = average_precision_score(labels, anomaly_scores)
-    auc = roc_auc_score(labels, anomaly_scores)
+    auc,ap = compute_statistics(-anomaly_scores, labels)
     return auc, ap, anomaly_scores
 
 def run_for_consolidated_benchmarks(in_dir, out_file, num_runs=50):
@@ -193,8 +197,10 @@ def run_for_dataset(in_file, out_file, num_runs):
     fw.close()
     pickle.dump(score_arr, open(out_file2,"w"))
         
-in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
-out_dir = "../../Results_Irrel/NEW_RSHash"
+#in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
+#out_dir = "../../Results_Irrel/NEW_RSHash"
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Consolidated_Irrel"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Results/Results_Irrel/New_RSHash"
 
 print "Running RSHash"
 file_name = sys.argv[1]

@@ -31,7 +31,7 @@ def run_HSTrees(X, labels):
     clf.fit(X)
     print "Classifier Fit."
     scores = clf.decision_function(X)
-    auc, ap = compute_statistics(scores, labels)
+    auc, ap = compute_statistics(-scores, labels)
     del clf
     return auc, ap, scores
         
@@ -127,8 +127,8 @@ def run_for_dataset(in_file, out_file, num_runs):
 #in_dir = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
 #run_for_consolidated_benchmarks(in_dir,out_file,10)
 
-in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
-out_dir = "../../Results_Irrel/NEW_HSTrees"
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Consolidated_Irrel"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Results/Results_Irrel/New_HSTrees"
 
 print "Running HS-Trees"
 file_name = sys.argv[1]
