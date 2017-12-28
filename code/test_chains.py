@@ -14,17 +14,16 @@ from sklearn.neighbors import NearestNeighbors
 import sys
 
 if __name__ == "__main__":
-    data = loadmat("../data/synData.mat")
+    data = loadmat("../data/synDataNoisy.mat")
     X = data["X"]
     y = data["y"].ravel()
     anomalies = y == 1
 
-    Xnoisy = np.concatenate((X, np.random.normal(loc=0.5, scale=0.05,
-                                                 size=(X.shape[0], 100))), axis=1)
+    Xnoisy = X
 
     print "Chains...",
-    k = 25
-    nchains = 1
+    k = 50
+    nchains = 50
     depth = 10
     print k, nchains, depth
     depths = range(depth)
@@ -32,8 +31,6 @@ if __name__ == "__main__":
     cf = Chains(k=k, nchains=nchains, depth=depth)
     cf.fit(Xnoisy)
     bincounts = cf.bincount(Xnoisy)
-    lociscores = cf.lociscore(Xnoisy)
-    anomalyscores = cf.score(Xnoisy)
 
     # bincount histogram
     f, ax = plt.subplots()
@@ -74,6 +71,7 @@ if __name__ == "__main__":
 
     # lociscore histogram
     f, ax = plt.subplots()
+    lociscores = cf.lociscore(Xnoisy)
     ax.boxplot([lociscores[anomalies,d] for d in depths],
                positions=np.arange(0.0, 2.0*len(depths), 2.0),
                boxprops={'color': '#e41a1c'}, sym='', whis=[10,90],
@@ -111,6 +109,7 @@ if __name__ == "__main__":
 
     # anomaly score histogram
     f, ax = plt.subplots()
+    anomalyscores = cf.score(Xnoisy)
     ax.boxplot(anomalyscores[anomalies],
                positions=[0.0],
                boxprops={'color': '#e41a1c'}, sym='', whis=[10,90],
@@ -142,6 +141,25 @@ if __name__ == "__main__":
     plt.ylabel("Precision")
     plt.legend(loc='lower left')
     plt.savefig("chains_anomalyscore_pr_k" + str(k) +
+                "c" + str(nchains) + "d" + str(depth) + ".pdf",
+                bbox_inches="tight")
+
+    # unique bin id's
+    print "Unique bins..."
+    nbins = []
+    for d in range(depth):
+        nbins_d = []
+        for c in cf.chains:
+            n = len(c.cmsketches[d].keys())
+            nbins_d.append(n)
+        nbins.append(nbins_d)
+    f, ax = plt.subplots()
+    ax.boxplot(nbins, boxprops={'color': 'k'}, sym='', whis=[10,90],
+               medianprops={'color': 'k'})
+    plt.grid()
+    plt.xlabel(r"Depth $d$")
+    plt.ylabel(r"No. of unique bin IDs")
+    plt.savefig("chains_binids_k" + str(k) +
                 "c" + str(nchains) + "d" + str(depth) + ".pdf",
                 bbox_inches="tight")
 
