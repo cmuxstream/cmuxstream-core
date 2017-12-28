@@ -1,4 +1,4 @@
-### MATPLOTLIBRC FORMAT
+###r MATPLOTLIBRC FORMAT
 
 # This is a sample matplotlib configuration file - you can find a copy
 # of it on your system in
@@ -466,7 +466,7 @@ axes.linewidth      : 1.0     # edge linewidth
 #contour.corner_mask        : True   # True | False | legacy
 
 ### ERRORBAR PLOTS
-#errorbar.capsize : 0             # length of end cap on error bars in pixels
+errorbar.capsize : 4             # length of end cap on error bars in pixels
 
 ### HISTOGRAM PLOTS
 #hist.bins : 10                   # The default number of histogram bins.
