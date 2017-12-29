@@ -79,10 +79,8 @@ class Chain:
         indices = np.arange(scores.shape[0])
 
         lociscores = np.zeros(scores.shape, dtype=np.float)
-        for i in range(X.shape[0]):
-            score_i = scores[i,:]
-            mean_score_j = np.mean(scores[indices!=i, :])
-            lociscores[i,:] = score_i - mean_score_j
+        means = np.mean(scores, axis=0)
+        lociscores = scores - means
 
         return lociscores
 
@@ -120,6 +118,7 @@ class Chains:
         projected_X = self.projector.transform(X)
         scores = np.zeros((X.shape[0], self.depth))
         for i, chain in enumerate(self.chains):
+            print "Bincounting chain", i, "..."
             scores += chain.bincount(projected_X)
         scores /= float(self.nchains)
         return scores
@@ -128,6 +127,7 @@ class Chains:
         projected_X = self.projector.transform(X)
         scores = np.zeros((X.shape[0], self.depth))
         for i, chain in enumerate(self.chains):
+            print "LOCI chain", i, "..."
             scores += chain.lociscore(projected_X)
         scores /= float(self.nchains)
         return scores
@@ -136,6 +136,7 @@ class Chains:
         projected_X = self.projector.transform(X)
         scores = np.zeros(X.shape[0])
         for i, chain in enumerate(self.chains):
+            print "Scoring chain", i, "..."
             scores += chain.score(projected_X)
         scores /= float(self.nchains)
         return scores
