@@ -109,7 +109,7 @@ class Chains:
         projected_X = self.projector.fit_transform(X)
         deltamax = np.ptp(projected_X, axis=0)/2.0
         for i in range(self.nchains):
-            print "Fitting chain", i, "..."
+            #print "Fitting chain", i, "..."
             c = Chain(deltamax, depth=self.depth)
             c.fit(projected_X)
             self.chains.append(c)
@@ -136,7 +136,7 @@ class Chains:
         projected_X = self.projector.transform(X)
         scores = np.zeros(X.shape[0])
         for i, chain in enumerate(self.chains):
-            print "Scoring chain", i, "..."
+            #print "Scoring chain", i, "..."
             scores += chain.score(projected_X)
         scores /= float(self.nchains)
         return scores
