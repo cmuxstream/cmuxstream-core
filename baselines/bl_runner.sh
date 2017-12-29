@@ -1,6 +1,6 @@
-input_dir="/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Consolidated_Irrel"
+input_dir="/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim"
 
-filenames=`ls $input_dir/*.csv`
+filenames=`ls $input_dir/*`
 for entry in $filenames
 do
   filename=`basename "$entry"`

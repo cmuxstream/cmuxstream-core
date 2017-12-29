@@ -8,6 +8,7 @@ from sklearn.metrics.ranking import auc
 from sklearn.preprocessing import MinMaxScaler, scale
 from scipy.io import loadmat
 import pickle
+import time
 
 #DATA_DIR = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets"
 DATA_DIR  = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
@@ -150,8 +151,8 @@ out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Results/Res
 #in_file = os.path.join(in_dir,file_name)
 #out_file = os.path.join(out_dir, file_name)
 #run_for_dataset(in_file, out_file, num_runs)
-in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/HighDim"
-out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/iForest/HighDim"
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/Time_Analysis"
 
 #in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Original"
 #out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/iForest/Orig"
@@ -160,5 +161,7 @@ file_name = sys.argv[1]
 num_runs = int(sys.argv[2])
 in_file = os.path.join(in_dir,file_name)
 out_file = os.path.join(out_dir, file_name)
+start_time = time.time()
 run_for_dataset(in_file, out_file, num_runs)
+print "Time Taken="+str(time.time() - start_time)+ " for:"+str(file_name)
     

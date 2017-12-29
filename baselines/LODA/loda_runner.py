@@ -9,6 +9,7 @@ from loda_support import *
 from ensemble_support import *
 from scipy.io import loadmat
 import pickle
+import time
 
 def read_dataset2(filename):
     data = np.loadtxt(filename, delimiter=',')
@@ -128,9 +129,15 @@ def run_for_dataset(in_file, out_file, num_runs):
 #out_dir = "../../Results_Irrel/NEW_LODA"
 in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets"
 out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/temp"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/Time_Analysis"
+
 print "Running LODA"
 file_name = sys.argv[1]
 num_runs = int(sys.argv[2])
 in_file = os.path.join(in_dir,file_name)
 out_file = os.path.join(out_dir, file_name)
+start_time = time.time()
 run_for_dataset(in_file, out_file, num_runs)
+print "Time Taken="+str(time.time() - start_time)+ " for:"+str(file_name)

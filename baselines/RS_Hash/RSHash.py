@@ -6,6 +6,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.preprocessing import MinMaxScaler, scale
 from scipy.io import loadmat
 import pickle
+import time
 
 DATA_DIR  = "/nfshome/SHARED/BENCHMARK_HighDim_DATA/Consolidated"
 
@@ -20,7 +21,7 @@ class RSHash(object):
                  data,
                  labels,
                  num_components=100,
-                 sampling_points=128,
+                 sampling_points=256,
                  num_hash_fns=1,
                  random_state=None,
                  verbose=0):
@@ -62,9 +63,12 @@ class RSHash(object):
         S = self.X[selected_indexes,:]
         
         # Normalize S
+        #norm_S = (S - S.min(axis=0)) / (S.max(axis=0) - S.min(axis=0))
+        
         minimum = np.min(S, axis=0)
         maximum = np.max(S, axis=0)
         norm_S =  (S -  minimum)/(maximum -  minimum)
+        norm_S[np.abs(norm_S) == np.inf] =0
         
         # Shift and Set Y
         Y = -1 * np.ones([S.shape[0], S.shape[1]])
@@ -90,6 +94,7 @@ class RSHash(object):
         # Score the sample
         # Transform each point
         norm_X =  (self.X -  minimum)/(maximum -  minimum)
+        norm_X[np.abs(norm_X) == np.inf] =0
         score_Y = -1 * np.ones([self.X.shape[0], self.X.shape[1]])
             
         for j in range(score_Y.shape[1]):
@@ -114,6 +119,15 @@ class RSHash(object):
         
         return np.array(score_arr)
     
+def read_dataset2(filename):
+    data = np.loadtxt(filename, delimiter=',')
+    n,m = data.shape
+    X = data[:,0:m-1]
+    y = data[:,m-1]
+    print n,m, X.shape, y.shape
+    
+    return X,y
+
 def read_dataset(filename):
     df = pd.read_csv(filename)
     pt_ids = np.array(df['point.id'])
@@ -181,7 +195,7 @@ def run_for_dataset(in_file, out_file, num_runs):
     fw=open(out_file,'w')
     out_file2=out_file+"_Scores.pkl"
     print "Doing for:"+str(in_file)
-    X, labels = read_dataset(os.path.join(in_dir,in_file))
+    X, labels = read_dataset2(os.path.join(in_dir,in_file))
     auc_arr = []
     ap_arr = []
     score_arr = []
@@ -202,12 +216,17 @@ def run_for_dataset(in_file, out_file, num_runs):
 in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Consolidated_Irrel"
 out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Results/Results_Irrel/New_RSHash"
 
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/Time_Analysis"
+
 print "Running RSHash"
 file_name = sys.argv[1]
 num_runs = int(sys.argv[2])
 in_file = os.path.join(in_dir,file_name)
 out_file = os.path.join(out_dir, file_name)
-run_for_dataset(in_file, out_file, num_runs)    
+start_time = time.time()
+run_for_dataset(in_file, out_file, num_runs)
+print "Time Taken="+str(time.time() - start_time)+ " for:"+str(file_name)
 
 #ds_name = "abalone"
 #run_for_benchmarks(ds_name)

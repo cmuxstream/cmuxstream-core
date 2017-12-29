@@ -8,8 +8,18 @@ from sklearn.preprocessing import MinMaxScaler, scale
 from scipy.io import loadmat
 from HSTrees import HSTrees
 import pickle
+import time
 
 DATA_DIR = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Benchmark_Datasets/"
+
+def read_dataset2(filename):
+    data = np.loadtxt(filename, delimiter=',')
+    n,m = data.shape
+    X = data[:,0:m-1]
+    y = data[:,m-1]
+    print n,m, X.shape, y.shape
+    
+    return X,y
 
 def read_dataset(filename):
     df = pd.read_csv(filename)
@@ -107,7 +117,7 @@ def run_for_dataset(in_file, out_file, num_runs):
     fw=open(out_file,'w')
     out_file2=out_file+"_Scores.pkl"
     print "Doing for:"+str(in_file)
-    X, labels = read_dataset(os.path.join(in_dir,in_file))
+    X, labels = read_dataset2(os.path.join(in_dir,in_file))
     auc_arr = []
     ap_arr = []
     score_arr = []
@@ -130,9 +140,14 @@ def run_for_dataset(in_file, out_file, num_runs):
 in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Consolidated_Irrel"
 out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Results/Results_Irrel/New_HSTrees"
 
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/Time_Analysis"
+
 print "Running HS-Trees"
 file_name = sys.argv[1]
 num_runs = int(sys.argv[2])
 in_file = os.path.join(in_dir,file_name)
 out_file = os.path.join(out_dir, file_name)
+start_time = time.time()
 run_for_dataset(in_file, out_file, num_runs)
+print "Time Taken="+str(time.time() - start_time)+ " for:"+str(file_name)

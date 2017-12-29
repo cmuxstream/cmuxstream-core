@@ -32,7 +32,7 @@ def noisy_signal(data, desired_SNR_dB):
     noise = np.nan_to_num(noise * np.sqrt(scale_factor))
     return data + noise
 
-def create_privileged_dataset(df, outliers_fraction, desired_SNR_db, label='label'):
+def create_privileged_dataset(df, feature_percentage, outliers_fraction, desired_SNR_db, label='label'):
     df_anom = df.loc[df[label] == 1]
     df = df.loc[df[label] == 0]
     
@@ -41,7 +41,7 @@ def create_privileged_dataset(df, outliers_fraction, desired_SNR_db, label='labe
     num_cols = len(cols)
 
     # designating <= 20% of features as important features (the fraction of features to perturb can be made a function argument)
-    important_features = np.unique(np.random.choice(cols, num_cols // 5))
+    important_features = np.unique(np.random.choice(cols, int((feature_percentage*num_cols)/100)))
     # following if is added just to make sure we have atleast one important feature
     if len(important_features) < 1:
     	important_features = np.unique(np.random.choice(cols, 1))
@@ -68,16 +68,17 @@ def main():
     in_file = sys.argv[1]
     outlier_fraction = float(sys.argv[2])
     SnR = float(sys.argv[3])
-    out_dir = sys.argv[4]
+    feature_percentage = float(sys.argv[4])
+    out_dir = sys.argv[5]
     
     X,y = read_dataset(in_file)
     df = pd.DataFrame(X)
     df['Labels']=y
-    prepared_df, imp_features, residual_features = create_privileged_dataset(df, outlier_fraction, SnR, 'Labels')
+    prepared_df, imp_features, residual_features = create_privileged_dataset(df, feature_percentage, outlier_fraction, SnR, 'Labels')
     
     modified_data = prepared_df.as_matrix()
     print X.shape, modified_data.shape
-    out_file = os.path.join(out_dir,basename(in_file)+"_"+str(outlier_fraction)+"_"+str(SnR)+"_NOISY")
+    out_file = os.path.join(out_dir,basename(in_file)+"_"+str(feature_percentage)+"_"+str(outlier_fraction)+"_"+str(SnR)+"_NOISY")
     np.savetxt(out_file, modified_data, delimiter=',')
     
 if __name__ == '__main__':
