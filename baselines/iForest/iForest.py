@@ -36,7 +36,7 @@ def compute_statistics(scores, labels):
     return auc, avg_precision
     
 def run_IForest(X, labels):
-    clf = IsolationForest(n_estimators = 100)
+    clf = IsolationForest(n_estimators = 50)
     clf.fit(X, labels)
     scores = clf.decision_function(X)
     auc, ap = compute_statistics(-scores, labels)
@@ -152,7 +152,7 @@ out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Results/Res
 #out_file = os.path.join(out_dir, file_name)
 #run_for_dataset(in_file, out_file, num_runs)
 in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim"
-out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/Time_Analysis"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/LowDim_Option1/iForest"
 
 #in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Original"
 #out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/iForest/Orig"

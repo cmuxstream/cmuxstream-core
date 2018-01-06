@@ -88,7 +88,7 @@ def histogram_r(x, g1=1., g2=1., g3=-1., verbose=False):
     optd = np.argmax(penlike)
     if verbose:
         logger.debug("optimal num bins: %d" % (optd+1,))
-
+    
     counts, breaks = np.histogram(x, bins=optd+1, density=False)
     density = counts / (n * (breaks[1] - breaks[0]))
 
@@ -233,6 +233,7 @@ def get_best_proj(a, mink=1, maxk=10, sp=0.0, keep=None, exclude=None):
 
     # if (debug) print(paste("get_best_proj",maxk,sp))
     # logger.debug("get_best_proj: sparsity: %f" % (sp,))
+    print "get best proj: sparsity:%f" % (sp,)
 
     w = np.zeros(shape=(d, maxk + 1), dtype=float)
     hists = []
@@ -242,8 +243,9 @@ def get_best_proj(a, mink=1, maxk=10, sp=0.0, keep=None, exclude=None):
     w_ = get_random_proj(nproj=1, d=d, sp=sp, keep=keep, exclude=exclude)
     w[:, 0] = w_[:, 0]
     hists.append(build_proj_hist(a, w_)[0])
+    
     fx_k[:, 0] = get_neg_ll(a, w_, hists[0])[:, 0]
-
+    
     sigs = np.ones(maxk) * np.Inf
     k = 0
     # logger.debug("mink: %d, maxk: %d" % (mink, maxk))
@@ -255,7 +257,7 @@ def get_best_proj(a, mink=1, maxk=10, sp=0.0, keep=None, exclude=None):
         ll = get_neg_ll(a, w[:, k+1], hists[k+1])
 
         fx_k1[:, 0] = fx_k[:, 0] + ll[:, 0]
-
+        
         diff_ll = abs(fx_k1 / (k+2.0) - fx_k / (k+1.0))
         # logger.debug(diff_ll)
         diff_ll = diff_ll[np.isfinite(diff_ll)]
@@ -275,9 +277,17 @@ def get_best_proj(a, mink=1, maxk=10, sp=0.0, keep=None, exclude=None):
         # if (debug) print(paste("k =",k,"; length(sigs)",length(sigs),"; sigs_k=",tt))
 
         k += 1
-
     bestk = np.where(sigs == np.min(sigs))[0][0]  # np.where returns tuple of arrays
-    # print "bestk: %d" % (bestk,)
+    print "bestk: %d" % (bestk,)
+    #Uncomment here to choose bestK, else it will be set to the specified value.
+    bestk = 100
+    if(w.shape[1] <= 100):
+        print "current w shape="+str(w.shape)
+        for ex in range(100-w.shape[1]):
+            print ex
+    
+    print "bestK set to :"+str(bestk)+" and shape of ProjectionHistogram="+str(w[:, 0:bestk].shape)
+    
     return LodaModel(bestk, ProjectionVectorsHistograms(matrix(w[:, 0:bestk], nrow=nrow(w)),
                                                         hists[0:bestk]),
                      sigs)

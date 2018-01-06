@@ -36,14 +36,14 @@ def compute_statistics(scores, labels):
 
 def run_LODA(X, labels):
     #lodares = loda(X, sparsity=0.3, mink=1, maxk=103)
-    lodares = loda(X)
+    lodares = loda(X, maxk=110)
     #model = generate_model_from_loda_result(lodares, X, labels)
     #anoms, lbls, _, _, _, detector_scores, detector_wts = (
     #        model.anoms, model.lbls,
     #        model.w, model.hists, model.hpdfs, model.nlls, model.proj_wts
     #    )
     auc, ap = compute_statistics(lodares.nll, labels)
-    print auc, ap
+    print "AUC="+str(auc)+ " & AP="+str(ap)
     return auc, ap, lodares.nll
     
 def run_for_consolidated_benchmarks(in_dir, out_file, num_runs):
@@ -124,14 +124,13 @@ def run_for_dataset(in_file, out_file, num_runs):
     fw.write(str(np.mean(auc_arr))+","+str(np.std(auc_arr))+","+str(np.mean(ap_arr))+","+str(np.std(ap_arr))+"\n")
     fw.close()
     pickle.dump(score_arr, open(out_file2,"w"))
-        
 #in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Consolidated_Irrel"
 #out_dir = "../../Results_Irrel/NEW_LODA"
 in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets"
 out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/temp"
 
 in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim"
-out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/Time_Analysis"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/LowDim_Option1/LODA"
 
 print "Running LODA"
 file_name = sys.argv[1]
