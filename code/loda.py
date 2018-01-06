@@ -12,7 +12,6 @@ class LODA:
         self.projector = None
 
     def fit(self, X):
-        W = np.random.normal(size=(X.shape[1], self.nhistograms))
         self.projector = SparseRandomProjection(n_components=self.nhistograms,
                                                 density=1/3.0)
         Z = self.projector.fit_transform(X) 
