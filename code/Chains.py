@@ -8,24 +8,18 @@ import numpy as np
 class Chain:
 
     def __init__(self, deltamax, depth=25):
+        k = len(deltamax)
         self.deltamax = deltamax # feature ranges
         self.depth = depth
-        self.fs = [None] * depth # feature used at each depth
+        self.fs = [np.random.randint(0, k) for d in range(depth)]
         self.cmsketches = [None] * depth
-        self.shift = np.random.rand(len(deltamax)) * deltamax
+        self.shift = np.random.rand(k) * deltamax
 
-    def fit(self, X, verbose=False):
-        ndim = X.shape[1]
-        nrows = X.shape[0]
-
-        assert len(self.shift) == ndim
-        assert len(self.deltamax) == ndim
-
+    def fit(self, X, verbose=False, update=False, action='add'):
         prebins = np.zeros(X.shape, dtype=np.float)
-        depthcount = np.zeros(ndim, dtype=np.int)
+        depthcount = np.zeros(len(self.deltamax), dtype=np.int)
         for depth in range(self.depth):
-            f = np.random.randint(0, ndim) # random feature
-            self.fs[depth] = f
+            f = self.fs[depth]
             depthcount[f] += 1
 
             if depthcount[f] == 1:
@@ -33,25 +27,25 @@ class Chain:
             else:
                 prebins[:,f] = 2.0*prebins[:,f] - self.shift[f]/self.deltamax[f]
 
-            cmsketch = {}
+            if update:
+                cmsketch = self.cmsketches[depth]
+            else:
+                cmsketch = {}
             for prebin in prebins:
                 l = tuple(np.floor(prebin).astype(np.int))
-                if not l in cmsketch:
-                    cmsketch[l] = 0
-                cmsketch[l] += 1
+                if action == 'add':
+                    if not l in cmsketch:
+                        cmsketch[l] = 0
+                    cmsketch[l] += 1
+                elif action == 'remove':
+                    cmsketch[l] -= 1
+                    assert cmsketch[l] >= 0
             self.cmsketches[depth] = cmsketch
 
     def bincount(self, X):
         scores = np.zeros((X.shape[0], self.depth))
-
-        ndim = X.shape[1]
-        nrows = X.shape[0]
-
-        assert len(self.shift) == ndim
-        assert len(self.deltamax) == ndim
-
         prebins = np.zeros(X.shape, dtype=np.float)
-        depthcount = np.zeros(ndim, dtype=np.int)
+        depthcount = np.zeros(len(self.deltamax), dtype=np.int)
         for depth in range(self.depth):
             f = self.fs[depth] 
             depthcount[f] += 1
@@ -110,6 +104,12 @@ class Chains:
         else:
             raise Exception("Unknown projection type: " + projections)
 
+    def update(self, X, action='add'):
+        projected_X = self.projector.fit_transform(X)
+        for i in range(self.nchains):
+            c = self.chains[i]
+            c.fit(projected_X, update=True, action=action)
+
     def fit(self, X):
         projected_X = self.projector.fit_transform(X)
         deltamax = np.ptp(projected_X, axis=0)/2.0
@@ -124,7 +124,7 @@ class Chains:
         projected_X = self.projector.transform(X)
         scores = np.zeros((X.shape[0], self.depth))
         for i, chain in enumerate(self.chains):
-            print "Bincounting chain", i, "..."
+            #print "Bincounting chain", i, "..."
             scores += chain.bincount(projected_X)
         scores /= float(self.nchains)
         return scores
