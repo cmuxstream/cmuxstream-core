@@ -2,6 +2,7 @@
 
 from constants import *
 from sklearn.random_projection import SparseRandomProjection
+from StreamhashProjection import StreamhashProjection
 import numpy as np
 
 class Chain:
@@ -97,17 +98,22 @@ class Chains:
 
         if projections == 'sparse':
             self.projector = SparseRandomProjection(n_components=k,
-                                                    density=1/3.0,
+                                                    density=1/4.0,
                                                     random_state=SEED)
         elif projections == 'gaussian':
             self.projector = GaussianRandomProjection(n_components=k,
                                                       random_state=SEED)
+        elif projections == 'streamhash':
+            self.projector = StreamhashProjection(n_components=k,
+                                                  density=1/4.0,
+                                                  random_state=SEED)
         else:
             raise Exception("Unknown projection type: " + projections)
 
     def fit(self, X):
         projected_X = self.projector.fit_transform(X)
         deltamax = np.ptp(projected_X, axis=0)/2.0
+        deltamax[deltamax==0] = 1.0
         for i in range(self.nchains):
             #print "Fitting chain", i, "..."
             c = Chain(deltamax, depth=self.depth)

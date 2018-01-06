@@ -36,7 +36,7 @@ class StreamhashProjection:
         return Y
 
     def transform(self, X, feature_names=None):
-        return self.fit_transform(self, X, feature_names)
+        return self.fit_transform(X, feature_names)
     
     def _hash_string(self, k, s):
         hash_value = mmh3.hash(s, signed=False, seed=k)

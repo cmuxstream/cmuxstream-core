@@ -28,7 +28,7 @@ if __name__ == "__main__":
     print k, nchains, depth
     depths = range(depth)
     bincounts = np.zeros((Xnoisy.shape[0], depth), dtype=np.float)
-    cf = Chains(k=k, nchains=nchains, depth=depth)
+    cf = Chains(k=k, nchains=nchains, depth=depth, projections='streamhash')
     cf.fit(Xnoisy)
     bincounts = cf.bincount(Xnoisy)
 
@@ -164,8 +164,8 @@ if __name__ == "__main__":
                 bbox_inches="tight")
 
     print "Stability..."
-    ks = [50, 50, 25, 25]
-    ncs = [10, 50, 10, 50]
+    ks = [50, 100, 100]
+    ncs = [50, 50, 100]
     depth = 10
     for k, nchains in zip(ks, ncs):
         print k, nchains, depth
@@ -173,7 +173,7 @@ if __name__ == "__main__":
         aps = []
         for trial in range(5):
             print "\tTrial", trial
-            cf = Chains(k=k, nchains=nchains, depth=depth)
+            cf = Chains(k=k, nchains=nchains, depth=depth, projections='streamhash')
             cf.fit(Xnoisy)
             s = -cf.score(Xnoisy)
             average_precision = average_precision_score(y, s)
