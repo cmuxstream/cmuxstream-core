@@ -211,12 +211,14 @@ def run_for_dataset(in_file, out_file, num_runs):
         score_arr.append(scores)
         np.savetxt(out_file+"_Scores_"+str(i)+".txt",scores)
 
-in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Streaming_HighDim"
-out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/Streaming_HighDim"
+#in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Streaming_HighDim"
+#out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/Streaming_HighDim"
+in_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Streaming_HighDim"
+out_dir = "/home/SHARED/BENCHMARK_HighDim_DATA/Results/6_1_18/Streaming_HighDim"
 
 print "Running RSHash"
-#file_name = sys.argv[1]
-file_name = "madelon_overall.txt_10.0_0.1_15.0_NOISY_Random_0"
+file_name = sys.argv[1]
+#file_name = "madelon_overall.txt_10.0_0.1_15.0_NOISY_Random_0"
 #num_runs = int(sys.argv[2])
 num_runs = 1
 in_file = os.path.join(in_dir,file_name)
