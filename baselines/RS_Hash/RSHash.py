@@ -21,7 +21,7 @@ class RSHash(object):
                  data,
                  labels,
                  num_components=100,
-                 sampling_points=256,
+                 sampling_points=1000,
                  num_hash_fns=1,
                  random_state=None,
                  verbose=0):
@@ -37,6 +37,9 @@ class RSHash(object):
             self.scores.append(self.single_run())
     
     def single_run(self):
+        minimum = X.min(axis=0)
+        maximum = X.max(axis=0)
+        
         hash_functions=[]
         for i in range(self.w):
             hash_functions.append({})
@@ -57,6 +60,7 @@ class RSHash(object):
         
         # Select r dimensions from the dataset.
         V = np.random.choice(range(self.X.shape[1]),r,replace=False)
+        filtered_V = V[np.where(minimum!=maximum)]
         
         # Randomly sample dataset S of s points.
         selected_indexes = np.random.choice(range(self.X.shape[0]), self.s, replace=False)
@@ -65,10 +69,8 @@ class RSHash(object):
         # Normalize S
         #norm_S = (S - S.min(axis=0)) / (S.max(axis=0) - S.min(axis=0))
         
-        minimum = np.min(S, axis=0)
-        maximum = np.max(S, axis=0)
         norm_S =  (S -  minimum)/(maximum -  minimum)
-        norm_S[np.abs(norm_S) == np.inf] =0
+        norm_S[np.abs(norm_S) == np.inf] = 0
         
         # Shift and Set Y
         Y = -1 * np.ones([S.shape[0], S.shape[1]])
@@ -79,7 +81,7 @@ class RSHash(object):
         #            Y[i,j] = np.floor((norm_S[i,j] + alpha[j])/f)
         
         for j in range(Y.shape[1]):
-            if j in V:
+            if j in filtered_V:
                 Y[:,j] = np.floor((norm_S[:,j]+alpha[j])/float(f))
         
         # Apply w different hash functions
@@ -217,7 +219,7 @@ in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Consolidated
 out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Results/Results_Irrel/New_RSHash"
 
 in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim"
-out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/Time_Analysis"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/LowDim_Option1/RSHash"
 
 print "Running RSHash"
 file_name = sys.argv[1]

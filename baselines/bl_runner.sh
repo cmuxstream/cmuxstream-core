@@ -5,15 +5,15 @@ for entry in $filenames
 do
   filename=`basename "$entry"`
   cd iForest
-  python iForest.py $filename 1
+  python iForest.py $filename 10
   cd ..
   cd LODA
-  python loda_runner.py $filename 1
+  python loda_runner.py $filename 10
   cd ..
   cd RS_Hash
-  python RSHash.py $filename 1
+  python RSHash.py $filename 10
   cd ..
   cd HSTrees
-  python HSTree_runner.py $filename 1 
+  python HSTree_runner.py $filename 10
   cd ..
 done
