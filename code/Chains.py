@@ -92,14 +92,14 @@ class Chains:
 
         if projections == 'sparse':
             self.projector = SparseRandomProjection(n_components=k,
-                                                    density=1/4.0,
+                                                    density=1/3.0,
                                                     random_state=SEED)
         elif projections == 'gaussian':
             self.projector = GaussianRandomProjection(n_components=k,
                                                       random_state=SEED)
         elif projections == 'streamhash':
             self.projector = StreamhashProjection(n_components=k,
-                                                  density=1/4.0,
+                                                  density=1/3.0,
                                                   random_state=SEED)
         else:
             raise Exception("Unknown projection type: " + projections)
