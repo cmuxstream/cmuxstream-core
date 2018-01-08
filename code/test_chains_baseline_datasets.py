@@ -23,18 +23,17 @@ if __name__ == "__main__":
 
     times = np.zeros(nruns, dtype=float)
     aps = np.zeros(nruns, dtype=float)
-    aucs = np.zeros(nruns, dtype=float)
     scores = []
 
     print "Chains...",
-    k = 50
+    k = 100
     nchains = 100
-    depth = 10
+    depth = 15
     print k, nchains, depth
 
     for run in range(nruns):
         print "\tRun", run,
-        cf = Chains(k=k, nchains=nchains, depth=depth)
+        cf = Chains(k=k, nchains=nchains, depth=depth, projections='sparse')
         cf.fit(X)
         anomalyscores = -cf.score(X)
         scores.append(anomalyscores)
