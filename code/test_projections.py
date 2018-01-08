@@ -30,7 +30,7 @@ if __name__ == "__main__":
         print "SparseRandomProjection...",
         t0 = time.time()
         projector = SparseRandomProjection(n_components=k,
-                                           density=1/4.0,
+                                           density=1/3.0,
                                            random_state=SEED)
         projected_X = projector.fit_transform(Xnoisy)
         print "done in", time.time() - t0, "s"
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         t0 = time.time()
 
         projector = StreamhashProjection(n_components=k,
-                                         density=1/4.0,
+                                         density=1/3.0,
                                          random_state=SEED)
 
         projected_X = projector.fit_transform(Xnoisy)

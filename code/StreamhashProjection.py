@@ -7,12 +7,7 @@ import mmh3
 
 class StreamhashProjection:
 
-    def __init__(self, n_components, density=0.25, random_state=None):
-        if abs(math.log(density, 2) - int(math.log(density, 2))) > 10**-6:
-            raise Exception("Density must be a negative power of 2.0")
-
-        masksize = int(-math.log(density, 2) + 1)
-        self.mask = 2**masksize - 1
+    def __init__(self, n_components, density=1/3.0, random_state=None):
         self.keys = np.arange(0, n_components, 1)
         self.constant = np.sqrt(1./density)/np.sqrt(n_components)
         self.density = density
@@ -30,7 +25,7 @@ class StreamhashProjection:
                        for k in self.keys])
 
         # check if density matches
-        #print "R", np.sum(R.ravel() == 0)/float(len(R.ravel())) 
+        #print "R", np.sum(R.ravel() == 0)/float(len(R.ravel()))
 
         Y = np.dot(X, R.T)
         return Y
@@ -39,11 +34,11 @@ class StreamhashProjection:
         return self.fit_transform(X, feature_names)
     
     def _hash_string(self, k, s):
-        hash_value = mmh3.hash(s, signed=False, seed=k)
-        last_b_bits = hash_value & self.mask 
-        if last_b_bits == 0:
+        hash_value = int(mmh3.hash(s, signed=False, seed=k))/(2.0**32-1)
+        s = self.density
+        if hash_value <= s/2.0:
             return -1 * self.constant
-        elif last_b_bits == self.mask:
+        elif hash_value <= s:
             return self.constant
         else:
-            return 0.0
+            return 0
