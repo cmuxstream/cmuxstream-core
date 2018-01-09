@@ -5,6 +5,7 @@ tex/
 data/
 env*
 *.pdf
+*.synctex.gz
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
