@@ -113,6 +113,49 @@ HSTrees            & 2.861e-06        & 0.2375          &  2.049e-05	\\	\hline
 \label{my-label}
 \end{table}
 
+\begin{table}
+\centering
+    \begin{tabular}{|l|lllll|}
+    \hline
+    ~        & iForest   & RSHash    & LODA      & HS Trees  & XStream \\	\hline
+    iForest  & ~         & 0.9977    & 0.9999    & 0.4839    & 1       \\ 
+    RSHash   & 0.0025    & ~         & 0.9998    & 0.0752    & 1       \\
+    LODA     & 0.00013   & 0.00019   & ~         & 0.00010   & 1       \\
+    HS Trees & 0.5321    & 0.9299    & 0.999     & ~         & 1       \\
+    XStream  & 1.907e-06 & 6.676e-06 & 9.537e-07 & 2.861e-06 & ~       \\	\hline
+    \end{tabular}
+    \caption{Wilcoxon test p-value result for Low Dimension dataset. XST > LODA > RSH $\sim$ HST $\sim$ IF}
+\end{table}
+
+\begin{table}
+\centering
+    \begin{tabular}{|l|lllll|}
+    \hline
+    ~        & iForest   & RSHash    & LODA      & HS Trees  & XStream \\	\hline
+    iForest  & ~         & 0.7432    & 0.07528    & 0.00618    & 0.2853       \\ 
+    RSHash   & 0.2689    & ~         &  0.02964   & 0.0001    & 0.2729       \\
+    LODA     & 0.9299   & 0.9728   & ~         & 0.211   & 0.835      \\
+    HS Trees & 0.9944    & 0.9999    & 0.7996     & ~         & 0.7738       \\
+    XStream  & 0.7271 & 0.7392 & 0.1744 & 0.2375 & ~       \\	\hline
+    \end{tabular}
+    \caption{Wilcoxon test p-value result for High Dimension dataset. XST $\sim$ IF $\sim$ RSH >  LODA $\sim$ HST $\sim$ XST}
+\end{table}
+
+\begin{table}
+\centering
+    \begin{tabular}{|l|lllll|}
+    \hline
+    ~        & iForest   & RSHash    & LODA      & HS Trees  & XStream \\	\hline
+    iForest  & ~         & 0.987    & 0.9727    & 0.01942    & 0.9989       \\ 
+    RSHash   & 0.0135    & ~         &  0.9542   & 6.754e-05    & 0.9981       \\
+    LODA     & 0.02815   & 0.04711   & ~         & 0.0003357   & 0.9999      \\
+    HS Trees & 0.9812    & 0.9999    & 0.9997     & ~         & 1       \\
+    XStream  & 0.001196 & 0.00202 & 0.000109 & 2.049e-05 & ~       \\	\hline
+    \end{tabular}
+    \caption{Wilcoxon test p-value result for all datasets. XST > LODA > RSH > IF > HST}
+\end{table}
+
+
 \subsection{Time and Space Complexity}
 %
 %
