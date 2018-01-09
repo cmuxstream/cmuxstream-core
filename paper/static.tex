@@ -37,7 +37,7 @@ We used $2$ different methods to generate benchmark datasets. The first method w
 
 \subsection{Baseline Results}
 \begin{footnotesize}
-\begin{table}[ht!]
+\begin{table}[p!]
     %\centering
 		\begin{tabular}{lcccccc}
 				\toprule
@@ -45,72 +45,57 @@ We used $2$ different methods to generate benchmark datasets. The first method w
 				\midrule
 				\multicolumn{6}{c}{\textit{High-dimensional Datasets}}\\
 %gisette& $0.423 \pm 0.011$ &  $0.436 \pm 0.008$ &  $0.417 \pm 0.005$ &  $0.432 \pm 0.017$    \\
-gisette (30,0.3,1.2)& $0.683 \pm 0.045$ &  $0.531 \pm 0.018$ &  $0.460 \pm 0.005$ &  $0.628 \pm 0.021$  & $0.528 \pm  0.009$ \\
-gisette (30,0.3,10)& $0.541 \pm 0.027$ &  $0.321 \pm 0.004$ &  $0.354 \pm 0.002$ &  $0.471 \pm 0.024$ & $0.320 \pm  0.003$   \\
-gisette (30,0.3,20)& $0.450 \pm 0.022$ &  $0.290 \pm 0.003$ &  $0.308 \pm 0.003$ &  $0.347 \pm 0.017$  & $0.292 \pm  0.003$  \\
-gisette (30,0.3,30)& $0.432 \pm 0.016$ &  $0.301 \pm 0.005$ &  $0.310 \pm 0.002$ &  $0.316 \pm 0.006$  & $0.293 \pm  0.002$  \\
+gisette (30,0.3,1.2)  & $0.683 \pm 0.045$ &  $0.531 \pm 0.018$ &  $0.460 \pm 0.005$ &  $0.628 \pm 0.021$  & $0.528 \pm  0.009$ \\
+gisette (30,0.3,10)   & $0.541 \pm 0.027$ &  $0.321 \pm 0.004$ &  $0.354 \pm 0.002$ &  $0.471 \pm 0.024$  & $0.320 \pm  0.003$   \\
+gisette (30,0.3,20)   & $0.450 \pm 0.022$ &  $0.290 \pm 0.003$ &  $0.308 \pm 0.003$ &  $0.347 \pm 0.017$  & $0.292 \pm  0.003$  \\
+gisette (30,0.3,30)   & $0.432 \pm 0.016$ &  $0.301 \pm 0.005$ &  $0.310 \pm 0.002$ &  $0.316 \pm 0.006$  & $0.293 \pm  0.002$  \\
 \midrule
 %isolet& $0.442 \pm 0.019$ &  $0.429 \pm 0.02$ &  $0.444 \pm 0.001$ &  $0.444 \pm 0.013$    \\
-isolet (30.0,0.3,1.2)& $0.537 \pm 0.03$ &  $0.58 \pm 0.03$ &  $0.441 \pm 0.01$ &  $0.559 \pm 0.028$  & $0.640 \pm  0.020$   \\
-isolet (30.0,0.3,10)& $0.372 \pm 0.011$ &  $0.35 \pm 0.007$ &  $0.334 \pm 0.004$ &  $0.391 \pm 0.015$  & $0.348 \pm  0.007$  \\
-isolet (30.0,0.3,20)& $0.33 \pm 0.009$ &  $0.313 \pm 0.006$ &  $0.311 \pm 0.001$ &  $0.322 \pm 0.007$ & $0.318 \pm  0.002$   \\
-isolet (30.0,0.3,30)& $0.3 \pm 0.002$ &  $0.292 \pm 0.004$ &  $0.296 \pm 0.001$ &  $0.293 \pm 0.002$  & $0.290 \pm  0.002$  \\
+isolet (30.0,0.3,1.2) & $0.537 \pm 0.03$  &  $0.580 \pm 0.030$ &  $0.441 \pm 0.01$  &  $0.559 \pm 0.028$  & $0.640 \pm  0.020$   \\
+isolet (30.0,0.3,10)  & $0.372 \pm 0.011$ &  $0.350 \pm 0.007$ &  $0.334 \pm 0.004$ &  $0.391 \pm 0.015$  & $0.348 \pm  0.007$  \\
+isolet (30.0,0.3,20)  & $0.330 \pm 0.009$ &  $0.313 \pm 0.006$ &  $0.311 \pm 0.001$ &  $0.322 \pm 0.007$  & $0.318 \pm  0.002$   \\
+isolet (30.0,0.3,30)  & $0.300 \pm 0.002$ &  $0.292 \pm 0.004$ &  $0.296 \pm 0.001$ &  $0.293 \pm 0.002$  & $0.290 \pm  0.002$  \\
 \midrule
 %letter-recognition& $0.475 \pm 0.012$ &  $0.46 \pm 0.011$ &  $0.453 \pm 0.003$ &  $0.471 \pm 0.009$    \\
-letter (30.0,0.3,1.2)& $0.49 \pm 0.026$ &  $0.534 \pm 0.03$ &  $0.44 \pm 0.01$ &  $0.519 \pm 0.053$ & $0.597 \pm  0.020$   \\
-letter (30.0,0.3,10)& $0.374 \pm 0.015$ &  $0.337 \pm 0.003$ &  $0.339 \pm 0.008$ &  $0.375 \pm 0.007$ & $0.336 \pm  0.005$   \\
-letter (30.0,0.3,20)& $0.309 \pm 0.008$ &  $0.289 \pm 0.002$ &  $0.291 \pm 0.002$ &  $0.31 \pm 0.007$ & $0.300 \pm  0.002$   \\
-letter (30.0,0.3,30)& $0.319 \pm 0.01$ &  $0.305 \pm 0.003$ &  $0.308 \pm 0.001$ &  $0.307 \pm 0.004$ & $0.310 \pm  0.002$   \\
+letter (30.0,0.3,1.2) & $0.490 \pm 0.026$ &  $0.534 \pm 0.03$  &  $0.440 \pm 0.010$ &  $0.519 \pm 0.053$ & $0.597 \pm  0.020$   \\
+letter (30.0,0.3,10)  & $0.374 \pm 0.015$ &  $0.337 \pm 0.003$ &  $0.339 \pm 0.008$ &  $0.375 \pm 0.007$ & $0.336 \pm  0.005$   \\
+letter (30.0,0.3,20)  & $0.309 \pm 0.008$ &  $0.289 \pm 0.002$ &  $0.291 \pm 0.002$ &  $0.310 \pm 0.007$ & $0.300 \pm  0.002$   \\
+letter (30.0,0.3,30)  & $0.319 \pm 0.01$  &  $0.305 \pm 0.003$ &  $0.308 \pm 0.001$ &  $0.307 \pm 0.004$ & $0.310 \pm  0.002$   \\
 \midrule
 %madelon& $0.501 \pm 0.008$ &  $0.515 \pm 0.014$ &  $0.507 \pm 0.003$ &  $0.511 \pm 0.01$    \\
-madelon (5.0,0.05,1.2)& $0.896 \pm 0.051$ &  $1.0 \pm 0.0$ &  $0.92 \pm 0.007$ &  $0.969 \pm 0.039$ & $1.000 \pm  0.000$   \\
-madelon (5.0,0.05,10)& $0.643 \pm 0.13$ &  $0.988 \pm 0.012$ &  $0.784 \pm 0.068$ &  $0.899 \pm 0.094$ & $0.957 \pm  0.023$   \\
-madelon (5.0,0.05,20)& $0.24 \pm 0.093$ &  $0.112 \pm 0.027$ &  $0.16 \pm 0.039$ &  $0.377 \pm 0.143$  & $0.125 \pm  0.013$  \\
-madelon (5.0,0.05,30)& $0.07 \pm 0.013$ &  $0.054 \pm 0.007$ &  $0.083 \pm 0.004$ &  $0.099 \pm 0.059$ & $0.044 \pm  0.003$   \\
-
+madelon (5.0,0.05,1.2)& $0.896 \pm 0.051$ &  $1.000 \pm 0.0$   &  $0.920 \pm 0.007$ &  $0.969 \pm 0.039$ & $1.000 \pm  0.000$   \\
+madelon (5.0,0.05,10) & $0.643 \pm 0.13$  &  $0.988 \pm 0.012$ &  $0.784 \pm 0.068$ &  $0.899 \pm 0.094$ & $0.957 \pm  0.023$   \\
+madelon (5.0,0.05,20) & $0.240 \pm 0.093$ &  $0.112 \pm 0.027$ &  $0.160 \pm 0.039$ &  $0.377 \pm 0.143$ & $0.125 \pm  0.013$  \\
+madelon (5.0,0.05,30) & $0.070 \pm 0.013$ &  $0.054 \pm 0.007$ &  $0.083 \pm 0.004$ &  $0.099 \pm 0.059$ & $0.044 \pm  0.003$   \\
+\midrule
+\multicolumn{6}{c}{\textit{Low/medium-dimensional Datasets}}\\
+breast-cancer (100,0.1)   & $0.661 \pm 0.036$ &  $0.839 \pm 0.024$ &  $0.727 \pm 0.010$ &  $0.702 \pm 0.026$ & $0.851 \pm  0.022$ \\
+breast-cancern (1000,0.1) & $0.476 \pm 0.043$ &  $0.686 \pm 0.047$ &  $0.394 \pm 0.007$ &  $0.531 \pm 0.047$ & $0.845 \pm  0.018$ \\
+breast-cancer (2000,0.1)  & $0.447 \pm 0.026$ &  $0.643 \pm 0.066$ &  $0.444 \pm 0.015$ &  $0.474 \pm 0.046$ & $0.828 \pm  0.021$ \\
+breast-cancer (5000,0.1)  & $0.404 \pm 0.021$ &  $0.508 \pm 0.086$ &  $0.400 \pm 0.013$ &  $0.425 \pm 0.022$ & $0.773 \pm  0.039$ \\
+\midrule
+%ionosphere                & $0.819 \pm 0.008$ &  $0.790 \pm 0.014$  & $0.824 \pm 0.003$ &  $0.830 \pm 0.005$ & $0.044 \pm  0.003$ \\
+ionosphere (100,0.1)      & $0.756 \pm 0.031$ &  $0.771 \pm 0.013$ &  $0.773 \pm 0.005$ &  $0.725 \pm 0.018$ & $0.900 \pm  0.005$ \\
+ionosphere (1000,0.1)     & $0.590 \pm 0.044$ &  $0.742 \pm 0.032$ &  $0.573 \pm 0.008$ &  $0.579 \pm 0.054$ & $0.871 \pm  0.010$ \\
+ionosphere (2000,0.1)     & $0.441 \pm 0.033$ &  $0.736 \pm 0.029$ &  $0.505 \pm 0.033$ &  $0.446 \pm 0.027$ & $0.874 \pm  0.005$ \\
+ionosphere (5000,0.1)     & $0.403 \pm 0.022$ &  $0.675 \pm 0.048$ &  $0.376 \pm 0.006$ &  $0.399 \pm 0.028$ & $0.797 \pm  0.012$  \\
+\midrule
+%magic-telescope           & $0.655 \pm 0.011$ &  $0.623 \pm 0.004$ &  $0.674 \pm 0.003$ &  $0.678 \pm 0.005$ & $0.044 \pm  0.003$ \\
+magic-telescope (100,0.1) & $0.593 \pm 0.01$  &  $0.617 \pm 0.003$ &  $0.576 \pm 0.005$ &  $0.601 \pm 0.015$ & $0.637 \pm  0.008$ \\
+magic-telescope (1000,0.1)& $0.451 \pm 0.018$ &  $0.592 \pm 0.013$ &  $0.419 \pm 0.008$ &  $0.471 \pm 0.021$ & $0.610 \pm  0.005$ \\
+magic-telescope (2000,0.1)& $0.407 \pm 0.021$ &  $0.586 \pm 0.007$ &  $0.407 \pm 0.003$ &  $0.409 \pm 0.018$ & $0.587 \pm  0.009$ \\
+magic-telescope (5000,0.1)& $0.376 \pm 0.011$ &  $0.538 \pm 0.026$ &  $0.380 \pm 0.002$ &  $0.378 \pm 0.005$ & $0.575 \pm  0.007$ \\
+\midrule
+%pima-indians              & $0.498 \pm 0.015$ &  $0.480 \pm 0.015$ &  $0.502 \pm 0.005$ &  $0.518 \pm 0.006$ & $0.044 \pm  0.003$ \\
+pima-indians (100,0.1)    & $0.477 \pm 0.013$ &  $0.472 \pm 0.01$  &  $0.444 \pm 0.009$ &  $0.478 \pm 0.007$ & $0.522 \pm  0.008$ \\
+pima-indians (1000,0.1)   & $0.385 \pm 0.017$ &  $0.444 \pm 0.014$ &  $0.379 \pm 0.006$ &  $0.397 \pm 0.024$ & $0.498 \pm  0.011$ \\
+pima-indians (2000,0.1)   & $0.350 \pm 0.014$ &  $0.410 \pm 0.016$ &  $0.361 \pm 0.005$ &  $0.369 \pm 0.023$ & $0.478 \pm  0.008$ \\
+pima-indians (5000,0.1)   & $0.343 \pm 0.008$ &  $0.400 \pm 0.028$ &  $0.338 \pm 0.003$ &  $0.349 \pm 0.014$ & $0.466 \pm  0.009$ \\
 				\bottomrule
 		\end{tabular}
-		\caption{AP for Baseline algorithms on High Dimensional Dataset. The numbers in bracket indicates the percentage of features, fraction of samples to which noise is added, and the SnR ratio of noise respectively.}
+		\caption{Average precision of static methods on high-dimensional (top) and low/medium-dimensional (bottom) datasets. Mean and standard deviation reported over 10 runs. Numbers in the brackets indicate: (top) the percentage of features, fraction of samples to which noise is added, signal-to-noise ratio, and (bottom) noise column amount (as $\%$ of original dimensionality), relative noise factor.}
 \end{table}
 \end{footnotesize}
-
-\begin{footnotesize}
-\begin{table}[ht!]
-    \centering
-		\begin{tabular}{llllll}
-				\toprule
-				\textbf{Dataset} & \textbf{IF} & \textbf{LODA} & \textbf{RSH} & \textbf{HST} & \textbf{XS}	\\
-				\midrule
-				\multicolumn{3}{c}{\textit{Low/medium-dimensional Datasets}}\\
-breast-cancer& $0.635 \pm 0.024$ &  $0.883 \pm 0.019$ &  $0.758 \pm 0.004$ &  $0.719 \pm 0.019$    \\
-breast-cancer (100,0.1)& $0.661 \pm 0.036$ &  $0.839 \pm 0.024$ &  $0.727 \pm 0.01$ &  $0.702 \pm 0.026$    \\
-breast-cancern (1000,0.1)& $0.476 \pm 0.043$ &  $0.686 \pm 0.047$ &  $0.394 \pm 0.007$ &  $0.531 \pm 0.047$    \\
-breast-cancer (2000,0.1)& $0.447 \pm 0.026$ &  $0.643 \pm 0.066$ &  $0.444 \pm 0.015$ &  $0.474 \pm 0.046$    \\
-breast-cancer (5000,0.1)& $0.404 \pm 0.021$ &  $0.508 \pm 0.086$ &  $0.4 \pm 0.013$ &  $0.425 \pm 0.022$    \\
-\midrule
-ionosphere& $0.819 \pm 0.008$ &  $0.79 \pm 0.014$ &  $0.824 \pm 0.003$ &  $0.83 \pm 0.005$    \\
-ionosphere (100,0.1)& $0.756 \pm 0.031$ &  $0.771 \pm 0.013$ &  $0.773 \pm 0.005$ &  $0.725 \pm 0.018$    \\
-ionosphere (1000,0.1)& $0.59 \pm 0.044$ &  $0.742 \pm 0.032$ &  $0.573 \pm 0.008$ &  $0.579 \pm 0.054$    \\
-ionosphere (2000,0.1)& $0.441 \pm 0.033$ &  $0.736 \pm 0.029$ &  $0.505 \pm 0.033$ &  $0.446 \pm 0.027$    \\
-ionosphere (5000,0.1)& $0.403 \pm 0.022$ &  $0.675 \pm 0.048$ &  $0.376 \pm 0.006$ &  $0.399 \pm 0.028$    \\
-\midrule
-magic-telescope& $0.655 \pm 0.011$ &  $0.623 \pm 0.004$ &  $0.674 \pm 0.003$ &  $0.678 \pm 0.005$    \\
-magic-telescope (100,0.1)& $0.593 \pm 0.01$ &  $0.617 \pm 0.003$ &  $0.576 \pm 0.005$ &  $0.601 \pm 0.015$    \\
-magic-telescope (1000,0.1)& $0.451 \pm 0.018$ &  $0.592 \pm 0.013$ &  $0.419 \pm 0.008$ &  $0.471 \pm 0.021$    \\
-magic-telescope (2000,0.1)& $0.407 \pm 0.021$ &  $0.586 \pm 0.007$ &  $0.407 \pm 0.003$ &  $0.409 \pm 0.018$    \\
-magic-telescope (5000,0.1)& $0.376 \pm 0.011$ &  $0.538 \pm 0.026$ &  $0.38 \pm 0.002$ &  $0.378 \pm 0.005$    \\
-\midrule
-pima-indians& $0.498 \pm 0.015$ &  $0.48 \pm 0.015$ &  $0.502 \pm 0.005$ &  $0.518 \pm 0.006$    \\
-pima-indians (100,0.1)& $0.477 \pm 0.013$ &  $0.472 \pm 0.01$ &  $0.444 \pm 0.009$ &  $0.478 \pm 0.007$    \\
-pima-indians (1000,0.1)& $0.385 \pm 0.017$ &  $0.444 \pm 0.014$ &  $0.379 \pm 0.006$ &  $0.397 \pm 0.024$    \\
-pima-indians (2000,0.1)& $0.35 \pm 0.014$ &  $0.41 \pm 0.016$ &  $0.361 \pm 0.005$ &  $0.369 \pm 0.023$    \\
-pima-indians (5000,0.1)& $0.343 \pm 0.008$ &  $0.4 \pm 0.028$ &  $0.338 \pm 0.003$ &  $0.349 \pm 0.014$    \\
-				\bottomrule
-		\end{tabular}
-		\caption{AP over 10 runs for Low Dimensional Datasets. The numbers in the brackets alongside the dataset name indicate the percentage of original columns, added as noise, and the relative noise factor, respectively.}
-\end{table}
-\end{footnotesize}
-
 
 \begin{table}[]
 \centering
