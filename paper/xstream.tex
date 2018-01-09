@@ -484,77 +484,125 @@ Fig. 9(d) shows the anomaly scores. The order of anomalousness across point clas
 %     \caption{Score distributions for different point classes (see \S2.3 for details). Error bars indicate the median, 5$^{\textrm{th}}$ and 95$^{\textrm{th}}$ percentile scores across all points. Chains with $K=50, C=100, d=10$.}
 % \end{figure*}
 
-\subsection{Results on other high-dimensional datasets}
+\pagebreak
+\subsection{Streaming random projections}
 
-See \S3 for details on the datasets, and results with baseline methods.
+Let the data dimensionality be $D$ and projection dimensionality be $K$. Given a density $s$, the very sparse random projections method \parencite{li2006very} generates $K$ $D$-dimensional vectors containing elements $r_{km}$ as follows ($k = 1, \dots, K, m = 1, \dots, D$):
+\begin{eqnarray}
+	r_{km} = \begin{cases}
+		-\frac{1}{\sqrt{Ks}}\quad\textrm{ with probability }\frac{s}{2}\nonumber\\
+		0\quad\textrm{ with probability }1 - s\nonumber\\
+		\frac{1}{\sqrt{Ks}}\quad\textrm{ with probability }\frac{s}{2}\\
+	\end{cases}
+	\label{eq:randomprojections}
+\end{eqnarray}
+Instead of storing these vectors, we store $K$ hash functions. Each hash function $h_k$ hashes a string $w_m$ (the feature name) to a hash value $h_k(w_m)$, which serves as a plug-in replacement for $r_{km}$ without explicitly storing the random vectors.
 
-\begin{table}[ht!]
+The implementation of $h_k$ ensures that the hash values follow the probability distribution prescribed above.
+
+The function $h_k(w_m)$ is implemented as follows:
+\begin{enumerate}
+	\item $b = g_k(w_m)$, where $g_k$ is drawn from a universal family and $b$ is a 32-bit integer. Having more bits in $b$ provides a more precise approximation to the desired probability distribution, but we found 32 to be sufficient.
+	\item $n = b/(2^{32}-1)$ is a number between 0 and 1. With a good universal family to generate $g_k$, $n$ follows distributions $P_{g_k}(n) \sim \textrm{Uniform}(0,1)$ and $P_{w_m}(n) \sim \textrm{Uniform}(0,1)$.
+	\item $n$ is used to return a number in $\{\frac{1}{\sqrt{Ks}}, 0, \frac{1}{\sqrt{Ks}}\}$ with the desired probability distribution:
+		\begin{enumerate}
+			\item If $0 \leq n < s/2$, return $-\frac{1}{\sqrt{Ks}}$.
+			\item If $s/2 \leq n < s$, return $\frac{1}{\sqrt{Ks}}$.
+			\item If $s \leq n \leq 1$, return 0.
+		\end{enumerate}
+\end{enumerate}
+
+It is very important that $g_k$ be drawn from a universal (or almost-universal) string hash family with good empirical randomization properties. SipHash \parencite{aumasson2012siphash} and MurmurHash3\footnote{\url{https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp}} were found to perform well, whereas multiplicative hashing does not.
+
+Fig. \ref{fig:distortion} illustrates the empirical distortion of this streaming random projection method on the synthetic data, for both the Euclidean and cosine distances. Fig. \ref{fig:distortion-static} illustrates the distortion using the standard, static random projections.
+
+When used as a plug-in replacement for sparse random projections in XStream on the synthetic data, there was no significant drop in average precision (mean and standard deviation reported for 5 runs): AP = $0.823 \pm 0.088$ for $K = 50, C = 50$; AP = $0.916 \pm 0.009$ for $K = 100, C = 50$; AP = $0.927 \pm 0.003$ for $K = 100, C = 100$.
+
+\begin{figure*}[h!]
     \centering
-		\begin{tabular}{lll}
-				\toprule
-				\textbf{Dataset} & \textbf{AP} & \textbf{AUC}\\
-				\midrule
-				\multicolumn{3}{c}{\textit{High-dimensional Datasets}}\\
-				Madelone & $0.5174 \pm 0.0056$ & $0.5127 \pm 0.0078$\\
-				Madelone-Noisy (5.0, 0.1, 10.0) & $0.8271 \pm 0.0360$ & $0.9749 \pm 0.0059$\\
-				Madelone-Noisy (5.0, 0.1, 20.0) & $0.1485 \pm 0.0178$ & $0.6587 \pm 0.0215$\\
-				Madelone-Noisy (5.0, 0.1, 50.0) & $0.1161 \pm 0.0044$ & $0.5002 \pm 0.0106$\\
-				\midrule
-				Letter-Recognition & $0.4688 \pm 0.0087$ & $0.5274 \pm 0.0044$\\
-				Letter-Recognition-Noisy (5.0, 0.1, 10.0) & $0.1019 \pm 0.0018$ & $0.5005 \pm 0.0046$\\
-				Letter-Recognition-Noisy (5.0, 0.1, 20.0) & $0.1088 \pm 0.0022$ & $0.5046 \pm 0.0056$\\
-				Letter-Recognition-Noisy (5.0, 0.1, 50.0) & $0.1068 \pm 0.0016$ & $0.5010 \pm 0.0062$\\
-				\midrule
-				Gisette & $0.4633 \pm 0.0081$ & $0.4598 \pm 0.0137$\\
-				Gisette-Noisy (5.0, 0.1, 10.0) & $0.0934 \pm 0.0012$ & $0.4869 \pm 0.0069	$\\
-				Gisette-Noisy (5.0, 0.1, 20.0) & $0.1090 \pm 0.0025$ & $0.5106 \pm 0.0082$\\
-				Gisette-Noisy (5.0, 0.1, 50.0) & $0.0925 \pm 0.0013$ & $0.4933 \pm 0.0056$\\
-				\midrule
-				Isolette & $0.4402 \pm 0.0131$ & $0.5145 \pm 0.0109$\\
-				Isolette-Noisy (5.0, 0.1, 10.0) & $0.1098 \pm 0.0023$ & $0.5338 \pm 0.0042$\\
-				Isolette-Noisy (5.0, 0.1, 20.0) & $0.0895 \pm 0.0017$ & $0.4894 \pm 0.0064$\\
-				Isolette-Noisy (5.0, 0.1, 50.0) & $0.0968 \pm 0.0018$ & $0.4929 \pm 0.0041$\\
-				\bottomrule
-		\end{tabular}
-		\caption{AP/AUC over 10 runs, $K=50, C=100, D=10$.}
-\end{table}
+    \begin{subfigure}[t]{0.29\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/streamhash_projection_cosine_k50.pdf}
+        \caption{$K=50$, cosine.}
+    \end{subfigure}
+    \hfill
+		\begin{subfigure}[t]{0.29\textwidth}
+				\centering
+				\includegraphics[width=\linewidth]{fig/streamhash_projection_cosine_k100.pdf}
+				\caption{$K=100$, cosine.}
+		\end{subfigure}
+		\hfill
+		\begin{subfigure}[t]{0.29\textwidth}
+				\centering
+				\includegraphics[width=\linewidth]{fig/streamhash_projection_cosine_k1000.pdf}
+				\caption{$K=1000$, cosine.}
+		\end{subfigure}\\
+		\begin{subfigure}[t]{0.29\textwidth}
+				\centering
+				\includegraphics[width=\linewidth]{fig/streamhash_projection_euclidean_k50.pdf}
+				\caption{$K=50$, Euclidean.}
+		\end{subfigure}
+		\hfill
+		\begin{subfigure}[t]{0.29\textwidth}
+				\centering
+				\includegraphics[width=\linewidth]{fig/streamhash_projection_euclidean_k100.pdf}
+				\caption{$K=100$, Euclidean.}
+		\end{subfigure}
+		\hfill
+		\begin{subfigure}[t]{0.29\textwidth}
+				\centering
+				\includegraphics[width=\linewidth]{fig/streamhash_projection_euclidean_k1000.pdf}
+				\caption{$K=1000$, Euclidean.}
+		\end{subfigure}
+    \caption{Distortion of streaming random projections for the Euclidean and cosine distance.}
+		\label{fig:distortion}
+\end{figure*}
 
-\textbf{Note on results on Madelone-Noisy (5.0, 0.1, 10.0) vs. LODA.} LODA selects the optimal number histograms and bins (equivalently, bin width) based on the data. In the streaming variant, a sample of the data is used to select these hyperparameters. Once selected, they remain fixed for the entire duration of the LODA run.
-
-XStream, on the other hand, relies on ensembling instead of finding the ``right'' bin-width. Increasing $K$ for XStream to the optimal selected by LODA ($K = 125$) brings the AP up to $\sim0.90$.
-
-There is an additional factor that makes LODA's performance superior in the static case: LODA uses sparse \textit{Gaussian} random projections, which are a better approximation than the sparse \textit{binary} random projections used by XStream.
-
-Note that increasing $K$ up to $200$ makes the AP comparable to that of LODA.
+\begin{figure*}[h!]
+    \centering
+    \begin{subfigure}[t]{0.29\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/sparse_projection_cosine_k50.pdf}
+        \caption{$K=50$, cosine.}
+    \end{subfigure}
+    \hfill
+		\begin{subfigure}[t]{0.29\textwidth}
+				\centering
+				\includegraphics[width=\linewidth]{fig/sparse_projection_cosine_k100.pdf}
+				\caption{$K=100$, cosine.}
+		\end{subfigure}
+		\hfill
+		\begin{subfigure}[t]{0.29\textwidth}
+				\centering
+				\includegraphics[width=\linewidth]{fig/sparse_projection_cosine_k1000.pdf}
+				\caption{$K=1000$, cosine.}
+		\end{subfigure}\\
+		\begin{subfigure}[t]{0.29\textwidth}
+				\centering
+				\includegraphics[width=\linewidth]{fig/sparse_projection_euclidean_k50.pdf}
+				\caption{$K=50$, Euclidean.}
+		\end{subfigure}
+		\hfill
+		\begin{subfigure}[t]{0.29\textwidth}
+				\centering
+				\includegraphics[width=\linewidth]{fig/sparse_projection_euclidean_k100.pdf}
+				\caption{$K=100$, Euclidean.}
+		\end{subfigure}
+		\hfill
+		\begin{subfigure}[t]{0.29\textwidth}
+				\centering
+				\includegraphics[width=\linewidth]{fig/sparse_projection_euclidean_k1000.pdf}
+				\caption{$K=1000$, Euclidean.}
+		\end{subfigure}
+    \caption{Distortion for static random projections for the Euclidean and cosine distance.}
+		\label{fig:distortion-static}
+\end{figure*}
 
 \pagebreak
 
-\subsection{Results on other low/medium dimensional datasets}
+\subsection{Dynamic chains with windows}
 
-See \S3 for details on the datasets, and results with baseline methods.
-
-\begin{table}[ht!]
-    \centering
-		\begin{tabular}{lll}
-				\toprule
-				\textbf{Dataset} & \textbf{AP} & \textbf{AUC}\\
-				\midrule
-				\multicolumn{3}{c}{\textit{Low/medium-dimensional Datasets}}\\
-				Breast-Cancer-Wisconsin & $0.9007 \pm 0.0083$ & $0.9231 \pm 0.0074$\\
-				Breast-Cancer-Wisconsin-Noisy (100, 0.1) & $0.8514 \pm 0.0180$ & $0.8625 \pm 0.0186$\\
-				Breast-Cancer-Wisconsin-Noisy (1000, 0.1) & $0.8514 \pm 0.0180$ & $0.8625 \pm 0.0186$\\
-				Breast-Cancer-Wisconsin-Noisy (2000, 0.1) & $0.8514 \pm 0.0180$ & $0.8625 \pm 0.0186$\\
-				Breast-Cancer-Wisconsin-Noisy (5000, 0.1) & $0.8514 \pm 0.0180$ & $0.8625 \pm 0.0186$\\
-				\midrule
-				Ionosphere & $0.8425 \pm 0.0056$ & $0.8855 \pm 0.0046$\\
-				\midrule
-				Magic-Telescope & $0.4633 \pm 0.0081$ & $0.4598 \pm 0.0137$\\
-				\midrule
-				Pima-Indians & $0.5458 \pm 0.0075$ & $0.7041 \pm 0.0096$\\
-				\bottomrule
-		\end{tabular}
-		\caption{AP/AUC over 10 runs, $K=50, C=100, D=10$.}
-\end{table}
+\pagebreak
 
 \input{static}
 
