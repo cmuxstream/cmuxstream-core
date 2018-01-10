@@ -58,9 +58,9 @@ We used 2 different procedures to generate the datasets on which to benchmark, o
 
 Table \ref{table:static-results} lists the average precision of XStream and the competing methods on the generated datasets.
 
-A Friedman test for differences in the best-performing method across all datasets failed to reject the null hypothesis (that the difference ranking between methods is not statistically significant) with $p=2.2\times10^{-16} < 0.05$. However, note that the Friedman test only takes into account the rank (with respect to the AP) of each method on each dataset, and not the actual AP magnitude.
+A Friedman test for differences in the best-performing method across all datasets rejected the null hypothesis that the difference ranking between methods is not statistically significant with $p=2.2\times10^{-16} < 0.05$.
 
-Hence, we also perform a Wilcoxon signed-rank test to take into account the difference in AP magnitudes between pairs of methods over all datasets. Table \ref{table:wilcoxon-all} contains $p$-values from the Wilcoxon signed-rank test. Each cell $(i,j)$ in the table contains the $p$-value of the hypothesis that the difference in AP between methods $i$ and $j$ is statistically significant. Hence, \textbf{XS} > \textbf{LODA} > \textbf{RSH} > \textbf{IF} > \textbf{HST} is statistically significant at $p=0.05$.
+Hence, we perform a Wilcoxon signed-rank test to compare methods pairwise and obtain a ranking over all datasets. Table \ref{table:wilcoxon-all} contains $p$-values from the Wilcoxon signed-rank test. Each cell $(i,j)$ in the table contains the $p$-value of the hypothesis that method $i$ has a higher AP than method $j$ is statistically significant. Hence, \textbf{XS} > \textbf{LODA} > \textbf{RSH} > \textbf{IF} > \textbf{HST} is statistically significant at $p=0.05$.
 \begin{table}[h!]
 		\centering
     \begin{tabular}{lllllll}
@@ -77,6 +77,8 @@ Hence, we also perform a Wilcoxon signed-rank test to take into account the diff
     \caption{$p$-values from a Wilcoxon signed-rank test on the average precisions reported on all the datasets. Bold values are significant at $p=0.05$. Each cell $(i,j)$ contains the $p$-value of the hypothesis that method $i$ has a greater AP than method $j$. It can be observed that \textbf{XS} > \textbf{LODA} > \textbf{RSH} > \textbf{IF} > \textbf{HST} is statistically significant at $p=0.05$.}
 		\label{table:wilcoxon-all}
 \end{table}
+
+When repeated on just the high-dimensional datasets, we can conclude that \textbf{RS} > \textbf{LODA}, \textbf{RS} > \textbf{HST} and \textbf{IF} > \textbf{HST} at $p=0.05$. We do not have enough evidence to make enough comparisons to construct a total order among methods.
 
 % \begin{table}[]
 % \centering
