@@ -4,21 +4,21 @@
 
 \begin{table}[h!]
 	\centering
-	\begin{tabular}{lrr}
+	\begin{tabular}{lccc}
 	\toprule
-	\textbf{Dataset} & \textbf{Number of samples} & \textbf{Dimensionality} \\
+	\textbf{Dataset} & \textbf{Number of samples} & \textbf{Dimensionality} & \textbf{Number of Anomalies}\\
 	\midrule
-	\multicolumn{3}{c}{\textit{High-dimensional Datasets}}\\
-	gisette 		& 7000 & 4970	\\
-	isolet 			& 7797 & 616	\\
-	letter			& 7797 & 616	\\
-	madelon 		& 2600 & 500	\\
+	\multicolumn{4}{c}{\textit{High-dimensional Datasets}}\\
+	gisette 		& 7000 & 4970 & 3500	\\
+	isolet 			& 7797 & 616 & 3300	\\
+	letter			& 7797 & 616 & 3600	\\
+	madelon 		& 2600 & 500 & 1300	\\
 	\midrule
-	\multicolumn{3}{c}{\textit{Low/medium-dimensional Datasets}}\\
-	cancer 			& 568      & 30 \\
-	ionosphere  & 350      & 33 \\
-	telescope   & 19020    & 10 \\
-	indians    	& 768      & 8	\\
+	\multicolumn{4}{c}{\textit{Low/medium-dimensional Datasets}}\\
+	cancer 			& 568      & 30  & 211	\\
+	ionosphere  & 350      & 33  & 125		\\
+	telescope   & 19020    & 10  & 	6688		\\
+	indians    	& 768      & 8	& 269		\\
 	\bottomrule
 	\end{tabular}
 	\caption{Datasets used for the static evaluation.}
@@ -33,9 +33,9 @@ The datasets used are listed in Table \ref{table:datasets} to generate the subse
 
 We used 2 different procedures to generate the datasets on which to benchmark, one for the low/medium dimensional datasets and one for the high-dimensional datasets. They are described below:
 \begin{enumerate}
-	\item \textit{Low/medium-dimensional datasets:} We append new columns containing Gaussian noise to the original dataset, thereby increasing its dimensionality with noisy features. The number of noisy features is quantified as a percentage of the original dataset dimensionality. If the original dataset mean and standard deviation are $\mu$ and $\sigma$, the noisy columns contained Gaussian noise with mean $\rho\mu$ and standard deviation $\rho\sigma$, where $\rho$ is the noise factor. We consider appending 100\%, 1000\%, 2000\% and 5000\% noisy features, and use $\rho \in \{0.01, 0.1, 0.2, 0.25\}$.
+	\item \textit{Approach 1:} We append new columns containing Gaussian noise to the original dataset, thereby increasing its dimensionality with noisy features. The number of noisy features is quantified as a percentage of the original dataset dimensionality. If the original dataset mean and standard deviation are $\mu$ and $\sigma$, the noisy columns contained Gaussian noise with mean $\rho\mu$ and standard deviation $\rho\sigma$, where $\rho$ is the noise factor. We consider appending 100\%, 1000\%, 2000\% and 5000\% noisy features, and use $\rho \in \{0.01, 0.1, 0.2, 0.25\}$.
 
-	\item \textit{High-dimensional datasets:} We first discard all the original anomalous points. Now for the remaining nominal points, we first choose 10\% of the features at random and mark them as important features. We further proceed with choosing 5\% of the samples at random as important samples. Now, in this sub-block, which contains only important samples and important features, we add Gaussian noise to the original data. Again, Gaussian noise is used, parameterized by the mean, and the standard deviation of the entire nominal dataset. Further this noise is scaled according to the user-specified signal to noise ratio, and added to the original sub-block of our dataset and features.
+	\item \textit{Approach 2:} We first discard all the original anomalous points. Now for the remaining nominal points, we first choose 10\% of the features at random and mark them as important features. We further proceed with choosing 5\% of the samples at random as important samples. Now, in this sub-block, which contains only important samples and important features, we add Gaussian noise to the original data. Again, Gaussian noise is used, parameterized by the mean, and the standard deviation of the entire nominal dataset. Further this noise is scaled according to the user-specified signal to noise ratio, and added to the original sub-block of our dataset and features.
 \end{enumerate}
 
 \pagebreak
@@ -57,28 +57,101 @@ We used 2 different procedures to generate the datasets on which to benchmark, o
 \subsection{Baseline Results}
 
 Table \ref{table:static-results} lists the average precision of XStream and the competing methods on the generated datasets.
+%A Friedman test for differences in the best-performing method across all datasets rejected the null hypothesis that the difference ranking between methods is not statistically significant with $p=2.2\times10^{-16} < 0.05$.
 
-A Friedman test for differences in the best-performing method across all datasets rejected the null hypothesis that the difference ranking between methods is not statistically significant with $p=2.2\times10^{-16} < 0.05$.
+We conduct our experiments on datasets mentioned in Table~\ref{table:datasets}. A Friedman test for differences in the best-performing method across all datasets rejected the null hypothesis that the difference rankings between methods is not statistically significant with $p=0.0072 < 0.05$.
 
-Hence, we perform a Wilcoxon signed-rank test to compare methods pairwise and obtain a ranking over all datasets. Table \ref{table:wilcoxon-all} contains $p$-values from the Wilcoxon signed-rank test. Each cell $(i,j)$ in the table contains the $p$-value of the hypothesis that method $i$ has a higher AP than method $j$ is statistically significant. Hence, \textbf{XS} > \textbf{LODA} > \textbf{RSH} > \textbf{IF} > \textbf{HST} is statistically significant at $p=0.05$.
-\begin{table}[h!]
-		\centering
-    \begin{tabular}{lllllll}
-    \toprule
-    ~        & \textbf{IF}   & \textbf{RSH}    & \textbf{LODA}      & \textbf{HST}  & \textbf{XS} \\
-		\midrule
-    \textbf{IF}  	 & ---       			& 0.9870    		& 0.9727   			& \textbf{0.0194}   						& 0.9989       \\
-    \textbf{RSH}   & \textbf{0.0135} 	& ---       		& 0.9542   			& $\pmb{6.7540\times10^{-5}}$ & 0.9981       \\
-    \textbf{LODA}  & \textbf{0.0282} 	& 0.0471    		& ---      			& 0.0003   							& 0.9999      \\
-    \textbf{HST} 	 & 0.9812    			& 0.9999    		& 0.9997   			& ---         					& 1.0000       \\
-    \textbf{XS}    & \textbf{0.0012} & \textbf{0.0020} & \textbf{0.0001} & $\pmb{2.0490\times10^{-5}}$  & ---       \\
-		\bottomrule
+Hence, we perform a posthoc-Friedman test, Nemenyi test to compare all methods to each other. We first compute average ranks of all the methods over the  $8$ original datasets, which is shown in Table~\ref{table:OriginalRanks}. Setting significance level to be $\alpha=0.05$, we get the $q_{0.05}$ for $k=5$ pairs as $2.728$. Difference in average ranks of any two methods will be significant if 
+\begin{align}
+(R_{i} - R_{j}) > q_{\alpha} \sqrt{\frac{k(k+1)}{6N}}
+\end{align}
+Setting $N=8$ and $k=5$, for difference between a pair of methods to be significant, the difference between the rank should be greater than $2.1567$. Looking at the average ranks shown in Table~\ref{table:OriginalRanks}, we can say the (X-Stream, LODA) and (X-Stream, I-Forest) are significantly different.
+
+To show the effect of adding high-dimensionality, we add noisy columns to the $4$ original datasets. The noise is generated as mentioned above in Approach 1. The average ranks for all the methods is shown in Table~\ref{table:LowDimRanks}. Using Friedman test, we can reject the null hypothesis that the difference rankings between methods is not statistically significant with $p=3.451\times 10^{-10}$. We again perform posthoc-Friedman Nemenyi test; setting $N=16$ and $k=5$, we obtain that difference in average ranks should be greater than $1.524$. Observing the table, we find difference to be significant between (LODA, I-Forest), (X-Stream, I-Forest), (LODA, HS-Trees), (X-Stream, HS-Trees) and (X-Stream, RS-Hash).
+
+%Wilcoxon signed-rank test to compare methods pairwise and obtain a ranking over all datasets. Table \ref{table:wilcoxon-all} contains $p$-values from the Wilcoxon signed-rank test. Each cell $(i,j)$ in the table contains the $p$-value of the hypothesis that method $i$ has a higher AP than method $j$ is statistically significant. Hence, \textbf{XS} > \textbf{LODA} > \textbf{RSH} > \textbf{IF} > \textbf{HST} is statistically significant at $p=0.05$
+
+\begin{table}
+	\centering
+    \begin{tabular}{llllll}
+    	\toprule
+               & IF         & HST        & RSH        & LODA       & XS          \\	\hline
+    cancer     & 0.635(5.0) & 0.758(3.0) & 0.719(4.0) & 0.883(2.0) & 0.9035(1.0) \\
+    ionosphere & 0.819(4.0) & 0.824(3.0) & 0.83(2.0)  & 0.79(5.0)  & 0.8952(1.0) \\
+    telescope  & 0.655(3.0) & 0.674(2.0) & 0.678(1.0) & 0.623(5.0) & 0.6339(4.0) \\
+    indians    & 0.498(4.0) & 0.502(3.0) & 0.518(2.0) & 0.48(5.0)  & 0.5382(1.0) \\
+    gisette    & 0.423(4.0) & 0.417(5.0) & 0.432(3.0) & 0.436(2.0) & 0.4424(1.0) \\
+    isolet     & 0.442(4.0) & 0.444(2.5) & 0.444(2.5) & 0.429(5.0) & 0.4445(1.0) \\
+    letter     & 0.475(2.0) & 0.453(5.0) & 0.471(3.0) & 0.46(4.0)  & 0.4865(1.0) \\
+    madelon    & 0.501(5.0) & 0.507(4.0) & 0.511(3.0) & 0.515(2.0) & 0.5277(1.0) \\	\midrule
+    AVG RANK   & 3.875      & 3.4375     & 2.5625     & 3.75       & 1.375       \\
+    \bottomrule
     \end{tabular}
-    \caption{$p$-values from a Wilcoxon signed-rank test on the average precisions reported on all the datasets. Bold values are significant at $p=0.05$. Each cell $(i,j)$ contains the $p$-value of the hypothesis that method $i$ has a greater AP than method $j$. It can be observed that \textbf{XS} > \textbf{LODA} > \textbf{RSH} > \textbf{IF} > \textbf{HST} is statistically significant at $p=0.05$.}
-		\label{table:wilcoxon-all}
+    \caption {Average rank of methods over the 8 original datasets}
+            \label{table:OriginalRanks}
+
 \end{table}
 
-When repeated on just the high-dimensional datasets, we can conclude that \textbf{RS} > \textbf{LODA}, \textbf{RS} > \textbf{HST} and \textbf{IF} > \textbf{HST} at $p=0.05$. We do not have enough evidence to make enough comparisons to construct a total order among methods.
+%\begin{figure*}[ht!]
+%    \centering
+%        \includegraphics[scale=0.3]{fig/Neyemi_LowDim.pdf}
+%        \caption{Low/Mid - dimensional dataset analysis. Significance is shown via the connected lines.}
+%\end{figure*}
+
+%\begin{figure*}[ht!]
+%    \centering
+%        \includegraphics[scale=0.3]{fig/Neyemi_Overall_Original.pdf}
+%        \caption{All original dataset - neyemeni test  - Significance is shown via the connected lines.}
+%\end{figure*}
+
+\begin{table}
+	\centering
+    \begin{tabular}{llllll}
+    \toprule
+               & IF         & HST        & RSH        & LODA       & XS          \\	\hline
+    cancer100      & 0.661(5.0) & 0.727(3.0) & 0.702(4.0) & 0.839(2.0) & 0.8511(1.0) \\
+    cancer1000     & 0.476(4.0) & 0.394(5.0) & 0.531(3.0) & 0.686(2.0) & 0.8453(1.0) \\
+    cancer2000     & 0.447(4.0) & 0.444(5.0) & 0.474(3.0) & 0.643(2.0) & 0.8282(1.0) \\
+    cancer5000     & 0.404(4.0) & 0.4(5.0)   & 0.425(3.0) & 0.508(2.0) & 0.7729(1.0) \\
+    ionosphere100  & 0.756(4.0) & 0.773(2.0) & 0.725(5.0) & 0.771(3.0) & 0.9005(1.0) \\
+    ionosphere1000 & 0.59(3.0)  & 0.573(5.0) & 0.579(4.0) & 0.742(2.0) & 0.8706(1.0) \\
+    ionosphere2000 & 0.441(5.0) & 0.505(3.0) & 0.446(4.0) & 0.736(2.0) & 0.8743(1.0) \\
+    ionosphere5000 & 0.403(3.0) & 0.376(5.0) & 0.399(4.0) & 0.675(2.0) & 0.7966(1.0) \\
+    telescope100   & 0.593(4.0) & 0.576(5.0) & 0.601(3.0) & 0.617(2.0) & 0.6373(1.0) \\
+    telescope1000  & 0.451(4.0) & 0.419(5.0) & 0.471(3.0) & 0.592(2.0) & 0.6095(1.0) \\
+    telescope2000  & 0.407(4.5) & 0.407(4.5) & 0.409(3.0) & 0.586(2.0) & 0.5872(1.0) \\
+    telescope5000  & 0.376(5.0) & 0.38(3.0)  & 0.378(4.0) & 0.538(2.0) & 0.5752(1.0) \\
+    indians100     & 0.477(3.0) & 0.444(5.0) & 0.478(2.0) & 0.472(4.0) & 0.5218(1.0) \\
+    indians1000    & 0.385(4.0) & 0.379(5.0) & 0.397(3.0) & 0.444(2.0) & 0.4976(1.0) \\
+    indians2000    & 0.35(5.0)  & 0.361(4.0) & 0.369(3.0) & 0.41(2.0)  & 0.4777(1.0) \\
+    indians5000    & 0.343(4.0) & 0.338(5.0) & 0.349(3.0) & 0.4(2.0)   & 0.4659(1.0) \\	\hline
+    AVG. Rank              & 4.09375    & 4.3475     & 3.375      & 2.1875     & 1           \\    \bottomrule
+    \end{tabular}
+    \caption {Average rank of methods over the 16 perturbed datasets.}
+        \label{table:LowDimRanks}
+\end{table}
+
+
+
+%Hence, we perform a Wilcoxon signed-rank test to compare methods pairwise and obtain a ranking over all datasets. Table \ref{table:wilcoxon-all} contains $p$-values from the Wilcoxon signed-rank test. Each cell $(i,j)$ in the table contains the $p$-value of the hypothesis that method $i$ has a higher AP than method $j$ is statistically significant. Hence, \textbf{XS} > \textbf{LODA} > \textbf{RSH} > \textbf{IF} > \textbf{HST} is statistically significant at $p=0.05$.
+%\begin{table}[h!]
+%		\centering
+%    \begin{tabular}{lllllll}
+%    \toprule
+%    ~        & \textbf{IF}   & \textbf{RSH}    & \textbf{LODA}      & \textbf{HST}  & \textbf{XS} \\
+%		\midrule
+%    \textbf{IF}  	 & ---       			& 0.9870    		& 0.9727   			& \textbf{0.0194}   						& 0.9989       \\
+%    \textbf{RSH}   & \textbf{0.0135} 	& ---       		& 0.9542   			& $\pmb{6.7540\times10^{-5}}$ & 0.9981       \\
+%    \textbf{LODA}  & \textbf{0.0282} 	& 0.0471    		& ---      			& 0.0003   							& 0.9999      \\
+%    \textbf{HST} 	 & 0.9812    			& 0.9999    		& 0.9997   			& ---         					& 1.0000       \\
+%    \textbf{XS}    & \textbf{0.0012} & \textbf{0.0020} & \textbf{0.0001} & $\pmb{2.0490\times10^{-5}}$  & ---       \\
+%		\bottomrule
+%    \end{tabular}
+%    \caption{$p$-values from a Wilcoxon signed-rank test on the average precisions reported on all the datasets. Bold values are significant at $p=0.05$. Each cell $(i,j)$ contains the $p$-value of the hypothesis that method $i$ has a greater AP than method $j$. It can be observed that \textbf{XS} > \textbf{LODA} > \textbf{RSH} > \textbf{IF} > \textbf{HST} is statistically significant at $p=0.05$.}
+%		\label{table:wilcoxon-all}
+%\end{table}
+%
+%When repeated on just the high-dimensional datasets, we can conclude that \textbf{RS} > \textbf{LODA}, \textbf{RS} > \textbf{HST} and \textbf{IF} > \textbf{HST} at $p=0.05$. We do not have enough evidence to make enough comparisons to construct a total order among methods.
 
 % \begin{table}[]
 % \centering
@@ -96,50 +169,49 @@ When repeated on just the high-dimensional datasets, we can conclude that \textb
 % \label{my-label}
 % \end{table}
 
- \begin{table}
- \centering
-     \begin{tabular}{|l|lllll|}
-     \hline
-        & IF        & HST       & RSH      & LODA      & XS \\	\hline
-    IF   & ~         & 0.4839    & 0.9999   & 0.9977    & 1  \\
-    HST  & 0.5321    & ~         & 0.9999   & 0.9299    & 1  \\
-    RSH  & 0.0001307 & 0.0001049 & ~        & 0.0001974 & 1  \\
-    LODA & 0.002552  & 0.07526   & 0.9998   & ~         & 1  \\
-    XS   & 1.91E-06  & 2.86E-06  & 9.54E-07 & 6.68E-06  & ~  \\
-    \hline
-\end{tabular}
-     \caption{Wilcoxon test p-value result for Low Dimension dataset. XST > RSH > LODA > HST $\sim$ IF}
- \end{table}
-
- \begin{table}
- \centering
-     \begin{tabular}{|l|lllll|}
-     \hline
-      & IF     & HST       & RSH    & LODA    & XS     \\	\hline
-    IF   & ~      & 0.006183  & 0.7432 & 0.07528 & 0.2853 \\
-    HST  & 0.9944 & ~         & 0.9999 & 0.7996  & 0.7738 \\
-    RSH  & 0.2689 & 0.0001156 & ~      & 0.02964 & 0.2729 \\
-    LODA & 0.9299 & 0.211     & 0.9728 & ~       & 0.835  \\
-    XS   & 0.7271 & 0.2375    & 0.7392 & 0.1744  & ~      \\
-    \hline
-    \end{tabular}
-     \caption{Wilcoxon test p-value result for High Dimension dataset. IF > HST, RSH > HST, RSH > LODA}
- \end{table}
-
- \begin{table}
- \centering
-     \begin{tabular}{|l|lllll|}
-     \hline
-     & IF        & HST      & RSH       & LODA      & XS     \\	\hline
-    IF   & ~         & 0.01942  & 0.987     & 0.9727    & 0.9989 \\
-    HST  & 0.9812    & ~        & 0.999     & 0.997     & 1      \\
-    RSH  & 0.0135    & 6.75E-05 & ~         & 0.9542    & 0.9981 \\
-    LODA & 0.0001096 & 0.02815  & 0.0003357 & 0.04711   & 0.9999 \\
-    XS   & 0.001196  & 2.05E-05 & 0.002026  & 0.0001096 & ~      \\    \hline
-\end{tabular}
-     \caption{Wilcoxon test p-value result for all datasets. XS > LODA > RSH > IF > HST}
- \end{table}
-
+% \begin{table}
+% \centering
+%     \begin{tabular}{|l|lllll|}
+%     \hline
+%        & IF        & HST       & RSH      & LODA      & XS \\	\hline
+%    IF   & ~         & 0.4839    & 0.9999   & 0.9977    & 1  \\
+%    HST  & 0.5321    & ~         & 0.9999   & 0.9299    & 1  \\
+%    RSH  & 0.0001307 & 0.0001049 & ~        & 0.0001974 & 1  \\
+%    LODA & 0.002552  & 0.07526   & 0.9998   & ~         & 1  \\
+%    XS   & 1.91E-06  & 2.86E-06  & 9.54E-07 & 6.68E-06  & ~  \\
+%    \hline
+%\end{tabular}
+%     \caption{Wilcoxon test p-value result for Low Dimension dataset. XST > RSH > LODA > HST $\sim$ IF}
+% \end{table}
+%
+% \begin{table}
+% \centering
+%     \begin{tabular}{|l|lllll|}
+%     \hline
+%      & IF     & HST       & RSH    & LODA    & XS     \\	\hline
+%    IF   & ~      & 0.006183  & 0.7432 & 0.07528 & 0.2853 \\
+%    HST  & 0.9944 & ~         & 0.9999 & 0.7996  & 0.7738 \\
+%    RSH  & 0.2689 & 0.0001156 & ~      & 0.02964 & 0.2729 \\
+%    LODA & 0.9299 & 0.211     & 0.9728 & ~       & 0.835  \\
+%    XS   & 0.7271 & 0.2375    & 0.7392 & 0.1744  & ~      \\
+%    \hline
+%    \end{tabular}
+%     \caption{Wilcoxon test p-value result for High Dimension dataset. IF > HST, RSH > HST, RSH > LODA}
+% \end{table}
+%
+% \begin{table}
+% \centering
+%     \begin{tabular}{|l|lllll|}
+%     \hline
+%     & IF        & HST      & RSH       & LODA      & XS     \\	\hline
+%    IF   & ~         & 0.01942  & 0.987     & 0.9727    & 0.9989 \\
+%    HST  & 0.9812    & ~        & 0.999     & 0.997     & 1      \\
+%    RSH  & 0.0135    & 6.75E-05 & ~         & 0.9542    & 0.9981 \\
+%    LODA & 0.0001096 & 0.02815  & 0.0003357 & 0.04711   & 0.9999 \\
+%    XS   & 0.001196  & 2.05E-05 & 0.002026  & 0.0001096 & ~      \\    \hline
+%\end{tabular}
+%     \caption{Wilcoxon test p-value result for all datasets. XS > LODA > RSH > IF > HST}
+% \end{table}
 
 %\begin{table}
 %\centering
@@ -240,22 +312,22 @@ gisette (30,0.3,10.0 )& $0.541 \pm 0.027$ &  $0.354 \pm 0.002$ &  $0.471 \pm 0.0
 gisette (30,0.3,20.0 )& $0.45 \pm 0.022$ &  $0.308 \pm 0.003$ &  $0.347 \pm 0.017$ &  $0.29 \pm 0.003$ &  $0.292 \pm 0.0032$    \\
 gisette (30,0.3,30.0 )& $0.432 \pm 0.016$ &  $0.31 \pm 0.002$ &  $0.316 \pm 0.006$ &  $0.301 \pm 0.005$ &  $0.2929 \pm 0.0023$    \\
 %gisette (30,0.3,50.0 )& $0.408 \pm 0.009$    \\
-%isolet& $0.442 \pm 0.019$ &  $0.444 \pm 0.001$ &  $0.444 \pm 0.013$ &  $0.429 \pm 0.02$ &  $0.4445 \pm 0.0067$    \\
+isolet& $0.442 \pm 0.019$ &  $0.444 \pm 0.001$ &  $0.444 \pm 0.013$ &  $0.429 \pm 0.02$ &  $0.4445 \pm 0.0067$    \\
 \midrule
 isolet (30,0.3,1.2 )& $0.537 \pm 0.03$ &  $0.441 \pm 0.01$ &  $0.559 \pm 0.028$ &  $0.58 \pm 0.03$ &  $0.6396 \pm 0.0204$    \\
 isolet (30,0.3,10.0 )& $0.372 \pm 0.011$ &  $0.334 \pm 0.004$ &  $0.391 \pm 0.015$ &  $0.35 \pm 0.007$ &  $0.3479 \pm 0.0066$    \\
 isolet (30,0.3,20.0 )& $0.33 \pm 0.009$ &  $0.311 \pm 0.001$ &  $0.322 \pm 0.007$ &  $0.313 \pm 0.006$ &  $0.3176 \pm 0.0017$    \\
 isolet (30,0.3,30.0 )& $0.3 \pm 0.002$ &  $0.296 \pm 0.001$ &  $0.293 \pm 0.002$ &  $0.292 \pm 0.004$ &  $0.2899 \pm 0.0016$    \\
 %isolet (30,0.3,50.0 )& $0.313 \pm 0.003$    \\
-%letter& $0.475 \pm 0.012$ &  $0.453 \pm 0.003$ &  $0.471 \pm 0.009$ &  $0.46 \pm 0.011$ &  $0.4865 \pm 0.0075$    \\
 \midrule
+%letter& $0.475 \pm 0.012$ &  $0.453 \pm 0.003$ &  $0.471 \pm 0.009$ &  $0.46 \pm 0.011$ &  $0.4865 \pm 0.0075$    \\
 letter (30,0.3,1.2 )& $0.49 \pm 0.026$ &  $0.44 \pm 0.01$ &  $0.519 \pm 0.053$ &  $0.534 \pm 0.03$ &  $0.5967 \pm 0.0204$    \\
 letter (30,0.3,10.0 )& $0.374 \pm 0.015$ &  $0.339 \pm 0.008$ &  $0.375 \pm 0.007$ &  $0.337 \pm 0.003$ &  $0.3361 \pm 0.005$    \\
 letter (30,0.3,20.0 )& $0.309 \pm 0.008$ &  $0.291 \pm 0.002$ &  $0.31 \pm 0.007$ &  $0.289 \pm 0.002$ &  $0.3 \pm 0.0015$    \\
 letter (30,0.3,30.0 )& $0.319 \pm 0.01$ &  $0.308 \pm 0.001$ &  $0.307 \pm 0.004$ &  $0.305 \pm 0.003$ &  $0.3095 \pm 0.0023$    \\
 %letter (30,0.3,50.0 )& $0.307 \pm 0.002$    \\
-%madelon& $0.501 \pm 0.008$ &  $0.507 \pm 0.003$ &  $0.511 \pm 0.01$ &  $0.515 \pm 0.014$ &  $0.5277 \pm 0.008$    \\
 \midrule
+%madelon& $0.501 \pm 0.008$ &  $0.507 \pm 0.003$ &  $0.511 \pm 0.01$ &  $0.515 \pm 0.014$ &  $0.5277 \pm 0.008$    \\
 madelon (5,0.05,1.2 )& $0.896 \pm 0.051$ &  $0.92 \pm 0.007$ &  $0.969 \pm 0.039$ &  $1.0 \pm 0.0$ &  $1.0 \pm 0.0$    \\
 madelon (5,0.05,10.0 )& $0.643 \pm 0.13$ &  $0.784 \pm 0.068$ &  $0.899 \pm 0.094$ &  $0.988 \pm 0.012$ &  $0.9567 \pm 0.023$    \\
 madelon (5,0.05,20.0 )& $0.24 \pm 0.093$ &  $0.16 \pm 0.039$ &  $0.377 \pm 0.143$ &  $0.112 \pm 0.027$ &  $0.125 \pm 0.0133$    \\
@@ -290,6 +362,28 @@ indians (5000,0.1 )& $0.343 \pm 0.008$ &  $0.338 \pm 0.003$ &  $0.349 \pm 0.014$
 		\end{tabular}
 		\caption{Average precision of static methods on high-dimensional (top) and low/medium-dimensional (bottom) datasets. Mean and standard deviation reported over 10 runs. Numbers in the brackets indicate: (top) the percentage of features, fraction of samples to which noise is added, signal-to-noise ratio, and (bottom) noise column amount (as $\%$ of original dimensionality), relative noise factor.}
 		\label{table:static-results}
+\end{table}
+\end{footnotesize}
+
+
+\begin{footnotesize}
+\begin{table}[!hbtp]
+		\begin{tabular}{lcccccc}
+		\toprule
+		\textbf{Dataset} & \textbf{IF} &  \textbf{HST} & \textbf{RSH} &  \textbf{LODA}  & \textbf{XS}\\
+		\midrule
+				\multicolumn{6}{c}{\textit{Original Datasets}}\\
+		gisette& $0.423 \pm 0.011$ &  $0.417 \pm 0.005$ &  $0.432 \pm 0.017$ &  $0.436 \pm 0.008$ &  $0.4424 \pm 0.0081$    \\
+		isolet& $0.442 \pm 0.019$ &  $0.444 \pm 0.001$ &  $0.444 \pm 0.013$ &  $0.429 \pm 0.02$ &  $0.4445 \pm 0.0067$    \\
+		letter& $0.475 \pm 0.012$ &  $0.453 \pm 0.003$ &  $0.471 \pm 0.009$ &  $0.46 \pm 0.011$ &  $0.4865 \pm 0.0075$    \\
+		madelon& $0.501 \pm 0.008$ &  $0.507 \pm 0.003$ &  $0.511 \pm 0.01$ &  $0.515 \pm 0.014$ &  $0.5277 \pm 0.008$    \\
+		cancer& $0.635 \pm 0.024$ &  $0.758 \pm 0.004$ &  $0.719 \pm 0.019$ &  $0.883 \pm 0.019$ &  $0.9035 \pm 0.0104$    \\
+		ionosphere& $0.819 \pm 0.008$ &  $0.824 \pm 0.003$ &  $0.83 \pm 0.005$ &  $0.79 \pm 0.014$ &  $0.8952 \pm 0.0084$    \\
+		telescope& $0.655 \pm 0.011$ &  $0.674 \pm 0.003$ &  $0.678 \pm 0.005$ &  $0.623 \pm 0.004$ &  $0.6339 \pm 0.0061$    \\
+		indians& $0.498 \pm 0.015$ &  $0.502 \pm 0.005$ &  $0.518 \pm 0.006$ &  $0.48 \pm 0.015$ &  $0.5382 \pm 0.0052$    \\
+		\bottomrule
+		\end{tabular}
+		\caption{Average precision of static methods on original, unperturbed datasets. Mean and standard deviation are reported over 10 runs.}
 \end{table}
 \end{footnotesize}
 
