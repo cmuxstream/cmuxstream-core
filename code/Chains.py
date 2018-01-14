@@ -110,7 +110,7 @@ class Chain:
                     else:
                         bincount_n.append(0)
 
-                scores[i,depth] = np.median(bincount_n)
+                scores[i,depth] = np.mean(bincount_n)
 
         if bins == True:
             return scores, bincounts
