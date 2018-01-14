@@ -79,6 +79,33 @@ if __name__ == "__main__":
                 "c" + str(nchains) + "d" + str(depth) + ".pdf",
                 bbox_inches="tight")
 
+    # lociscore-d histogram
+    lociscores_d = cf.lociscore_density(Xnoisy)
+    multiplier = np.array([2.0 ** d for d in range(1, depth+1)])
+    lociscores_d /= multiplier
+
+    for idx, c in enumerate(CLASSES):
+        for d in range(depth):
+            s = lociscores_d[c,d]
+            medians[idx,d] = np.percentile(s, q=50.0)
+            pct5s[idx,d] = np.percentile(s, q=5.0)
+            pct95s[idx,d] = np.percentile(s, q=95.0)
+
+    plt.figure()
+    xs = np.arange(depth) + 1.0
+    for idx in range(len(CLASSES)):
+        ms = medians[idx,:]
+        yerr = [pct95s[idx,:] - ms, ms - pct5s[idx,:]]
+        plt.errorbar(x=xs, y=ms, yerr=yerr, label=str(idx), alpha=0.75)
+
+    plt.grid()
+    plt.legend(ncol=6, bbox_to_anchor=(1.05,1.15))
+    plt.xlabel(r"Depth $d$")
+    plt.ylabel(r"LOCI-d score / $2^d$")
+    plt.savefig("chains_type_lociscores-d_k" + str(k) +
+                "c" + str(nchains) + "d" + str(depth) + ".pdf",
+                bbox_inches="tight")
+
     # anomaly score histogram
     anomalyscores = -cf.score(Xnoisy)
 
@@ -97,7 +124,7 @@ if __name__ == "__main__":
         ms = medians[idx]
         yerr = [[pct95s[idx] - ms], [ms - pct5s[idx]]]
         plt.errorbar(x=[idx], y=[ms], yerr=yerr, label=str(idx), alpha=0.75,
-                     lw=3) 
+                     lw=3)
 
     plt.grid()
     plt.legend(ncol=6, bbox_to_anchor=(1.05,1.15))
@@ -109,3 +136,34 @@ if __name__ == "__main__":
 
     average_precision = average_precision_score(y, anomalyscores)
     print "AP:", average_precision
+
+    # anomaly score-d histogram
+    anomalyscores_d = -cf.score(Xnoisy, density=True)
+
+    medians = np.zeros(len(CLASSES))
+    pct5s = np.zeros(len(CLASSES))
+    pct95s = np.zeros(len(CLASSES))
+    for idx, c in enumerate(CLASSES):
+        s = anomalyscores_d[c]
+        medians[idx] = np.percentile(s, q=50.0)
+        pct5s[idx] = np.percentile(s, q=5.0)
+        pct95s[idx] = np.percentile(s, q=95.0)
+
+    plt.figure()
+    xs = np.arange(depth) + 1.0
+    for idx in range(len(CLASSES)):
+        ms = medians[idx]
+        yerr = [[pct95s[idx] - ms], [ms - pct5s[idx]]]
+        plt.errorbar(x=[idx], y=[ms], yerr=yerr, label=str(idx), alpha=0.75,
+                     lw=3) 
+
+    plt.grid()
+    plt.legend(ncol=6, bbox_to_anchor=(1.05,1.15))
+    plt.xlabel(r"Point type")
+    plt.ylabel(r"anomaly score")
+    plt.savefig("chains_type_anomscores-d_k" + str(k) +
+                "c" + str(nchains) + "d" + str(depth) + ".pdf",
+                bbox_inches="tight")
+
+    average_precision = average_precision_score(y, anomalyscores_d)
+    print "AP-d:", average_precision

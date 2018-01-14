@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 
 from constants import *
+import itertools
 from sklearn.random_projection import SparseRandomProjection
 from StreamhashProjection import StreamhashProjection
+import pathos.pools as pp
 import numpy as np
+import time
+import tqdm
+tqdm.tqdm.monitor_interval = 0
 
 class Chain:
 
@@ -79,8 +84,87 @@ class Chain:
 
         return lociscores
 
-    def score(self, X):
-        lociscores = self.lociscore(X)
+    def lociscore_density(self, X):
+        scores = np.zeros((X.shape[0], self.depth))
+        prebins = np.zeros(X.shape, dtype=np.float)
+        depthcount = np.zeros(len(self.deltamax), dtype=np.int)
+        for depth in range(self.depth):
+            f = self.fs[depth]
+            depthcount[f] += 1
+
+            if depthcount[f] == 1:
+                prebins[:,f] = (X[:,f] + self.shift[f])/self.deltamax[f]
+            else:
+                prebins[:,f] = 2.0*prebins[:,f] - self.shift[f]/self.deltamax[f]
+
+            cmsketch = self.cmsketches[depth]
+            fs = self.fs[:depth+1]
+            for i, prebin in enumerate(prebins):
+                bin_i = np.floor(prebin).astype(np.int)
+                l = tuple(bin_i)
+                if not l in cmsketch:
+                    scores[i,depth] = 0.0
+                else:
+                    scores[i,depth] = cmsketch[l]# * 2.0**depth
+
+                neighbor_bincounts = []
+                # 1-step
+                for f in fs:
+                    for delta in [1,-1]:
+                        nbr = bin_i[:]
+                        nbr[f] += delta
+                        nbr = tuple(nbr)
+                        if nbr in cmsketch:
+                            neighbor_bincounts.append(cmsketch[nbr])
+                        else:
+                            neighbor_bincounts.append(0)
+
+                if len(fs) == 1:
+                    scores[i,depth] -= np.mean(neighbor_bincounts)
+                    scores[i,depth] *= 2**depth
+                    continue
+
+                """
+                # 2-step
+                for f1, f2 in itertools.combinations(fs, 2):
+                    for delta1, delta2 in itertools.combinations([1, -1, 0], 2):
+                        if delta1 == 0 and delta2 == 0:
+                            continue
+                        nbr = bin_i[:]
+                        nbr[f1] += delta1
+                        nbr[f2] += delta2
+                        nbr = tuple(nbr)
+                        if nbr in cmsketch:
+                            neighbor_bincounts.append(cmsketch[nbr])
+                        else:
+                            neighbor_bincounts.append(0)
+                """
+                prebin_f = np.array([prebin[f] for f in fs])
+                left_dist = prebin - np.floor(prebin)
+                prob_f = 1.0 - np.minimum(left_dist, 1.0 - left_dist)
+                prob_right = left_dist
+                for w in range(min(3**depth-1, 50)):
+                    dims = np.random.binomial(1, p=prob_f)
+                    shifts = 2 * np.random.binomial(1, p=prob_right) - 1
+                    perturbation = shifts * dims
+                    for j in range(len(fs)):
+                        nbr = bin_i[:]
+                        nbr[fs[j]] += perturbation[j]
+                        nbr = tuple(nbr)
+                        if nbr in cmsketch:
+                            neighbor_bincounts.append(cmsketch[nbr])
+                        else:
+                            neighbor_bincounts.append(0)
+                scores[i,depth] -= np.mean(neighbor_bincounts)
+                scores[i,depth] *= 2**depth
+
+        return scores
+
+    def score(self, X, density=False):
+        if density:
+            lociscores = self.lociscore_density(X)
+        else:
+            lociscores = self.lociscore(X)
         scores = np.min(lociscores, axis=1)
         return scores
 
@@ -114,8 +198,7 @@ class Chains:
         projected_X = self.projector.fit_transform(X)
         deltamax = np.ptp(projected_X, axis=0)/2.0
         deltamax[deltamax==0] = 1.0
-        for i in range(self.nchains):
-            #print "Fitting chain", i, "..."
+        for i in tqdm.tqdm(range(self.nchains), desc='Fitting...'):
             c = Chain(deltamax, depth=self.depth)
             c.fit(projected_X)
             self.chains.append(c)
@@ -123,8 +206,8 @@ class Chains:
     def bincount(self, X):
         projected_X = self.projector.transform(X)
         scores = np.zeros((X.shape[0], self.depth))
-        for i, chain in enumerate(self.chains):
-            #print "Bincounting chain", i, "..."
+        for i in tqdm.tqdm(range(self.nchains), desc='Bincount...'):
+            chain = self.chains[i]
             scores += chain.bincount(projected_X)
         scores /= float(self.nchains)
         return scores
@@ -138,11 +221,37 @@ class Chains:
         scores /= float(self.nchains)
         return scores
 
-    def score(self, X):
+    def lociscore_density(self, X):
+        projected_X = self.projector.transform(X)
+        scores = np.zeros((X.shape[0], self.depth))
+        """
+        for i, chain in enumerate(self.chains):
+            print "LOCI-d chain", i, "..."
+            scores += chain.lociscore_density(projected_X)
+        """
+        #"""
+        def f(chain, proj):
+            return chain.lociscore_density(proj)
+        pool = pp.ProcessPool(NJOBS)
+        results = pool.uimap(f, self.chains, [projected_X]*len(self.chains))
+        pbar = tqdm.tqdm(total=len(self.chains), desc='LOCI-d')
+        for s in results:
+            scores += s
+            pbar.update()
+        #"""
+        scores /= float(self.nchains)
+        return scores
+
+    def score(self, X, density=False):
         projected_X = self.projector.transform(X)
         scores = np.zeros(X.shape[0])
-        for i, chain in enumerate(self.chains):
-            #print "Scoring chain", i, "..."
-            scores += chain.score(projected_X)
+
+        f = lambda chain, proj: chain.score(proj, density)
+        with pp.ProcessPool(NJOBS) as pool:
+            results = pool.uimap(f, self.chains, [projected_X]*len(self.chains))
+            pbar = tqdm.tqdm(total=len(self.chains), desc='Scoring...')
+            for s in results:
+                scores += s
+                pbar.update()
         scores /= float(self.nchains)
         return scores
