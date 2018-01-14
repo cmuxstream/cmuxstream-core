@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 SEED = 42
-NJOBS = -1
+NJOBS = 50
 
 # synthetic data point classes
 CLASSES = [range(0,1000), # sparse benign cluster
