@@ -19,7 +19,7 @@ if __name__ == "__main__":
     print "Chains...",
     k = 50
     nchains = 50
-    depth = 10
+    depth = 5
     print k, nchains, depth
     depths = range(depth)
     cf = Chains(k=k, nchains=nchains, depth=depth)
@@ -52,6 +52,52 @@ if __name__ == "__main__":
                 "c" + str(nchains) + "d" + str(depth) + ".pdf",
                 bbox_inches="tight")
 
+    # neighborhood count histogram
+    neighborbincounts = cf.neighborbincount(Xnoisy)
+    for idx, c in enumerate(CLASSES):
+        for d in range(depth):
+            s = neighborbincounts[c,d]
+            medians[idx,d] = np.percentile(s, q=50.0)
+            pct5s[idx,d] = np.percentile(s, q=5.0)
+            pct95s[idx,d] = np.percentile(s, q=95.0)
+
+    plt.figure()
+    xs = np.arange(depth) + 1.0
+    for idx in range(len(CLASSES)):
+        ms = medians[idx,:]
+        yerr = [pct95s[idx,:] - ms, ms - pct5s[idx,:]]
+        plt.errorbar(x=xs, y=ms, yerr=yerr, label=str(idx), alpha=0.75)
+    plt.grid()
+    plt.legend(ncol=6, bbox_to_anchor=(1.05,1.15))
+    plt.xlabel(r"Depth $d$")
+    plt.ylabel(r"Bin count")
+    plt.savefig("chains_type_neighborbincounts_k" + str(k) +
+                "c" + str(nchains) + "d" + str(depth) + ".pdf",
+                bbox_inches="tight")
+
+    # adjusted count histogram
+    adjustedbincounts = bincounts - neighborbincounts
+    for idx, c in enumerate(CLASSES):
+        for d in range(depth):
+            s = adjustedbincounts[c,d]
+            medians[idx,d] = np.percentile(s, q=50.0)
+            pct5s[idx,d] = np.percentile(s, q=5.0)
+            pct95s[idx,d] = np.percentile(s, q=95.0)
+
+    plt.figure()
+    xs = np.arange(depth) + 1.0
+    for idx in range(len(CLASSES)):
+        ms = medians[idx,:]
+        yerr = [pct95s[idx,:] - ms, ms - pct5s[idx,:]]
+        plt.errorbar(x=xs, y=ms, yerr=yerr, label=str(idx), alpha=0.75)
+    plt.grid()
+    plt.legend(ncol=6, bbox_to_anchor=(1.05,1.15))
+    plt.xlabel(r"Depth $d$")
+    plt.ylabel(r"Bin count")
+    plt.savefig("chains_type_adjustedbincounts_k" + str(k) +
+                "c" + str(nchains) + "d" + str(depth) + ".pdf",
+                bbox_inches="tight")
+
     # lociscore histogram
     lociscores = cf.lociscore(Xnoisy)
     multiplier = np.array([2.0 ** d for d in range(1, depth+1)])
@@ -76,6 +122,33 @@ if __name__ == "__main__":
     plt.xlabel(r"Depth $d$")
     plt.ylabel(r"LOCI score / $2^d$")
     plt.savefig("chains_type_lociscores_k" + str(k) +
+                "c" + str(nchains) + "d" + str(depth) + ".pdf",
+                bbox_inches="tight")
+    
+    # adjusted lociscore histogram
+    lociscores = cf.lociscore_adjusted(Xnoisy)
+    multiplier = np.array([2.0 ** d for d in range(1, depth+1)])
+    lociscores /= multiplier
+
+    for idx, c in enumerate(CLASSES):
+        for d in range(depth):
+            s = lociscores[c,d]
+            medians[idx,d] = np.percentile(s, q=50.0)
+            pct5s[idx,d] = np.percentile(s, q=5.0)
+            pct95s[idx,d] = np.percentile(s, q=95.0)
+
+    plt.figure()
+    xs = np.arange(depth) + 1.0
+    for idx in range(len(CLASSES)):
+        ms = medians[idx,:]
+        yerr = [pct95s[idx,:] - ms, ms - pct5s[idx,:]]
+        plt.errorbar(x=xs, y=ms, yerr=yerr, label=str(idx), alpha=0.75) 
+
+    plt.grid()
+    plt.legend(ncol=6, bbox_to_anchor=(1.05,1.15))
+    plt.xlabel(r"Depth $d$")
+    plt.ylabel(r"Adjusted LOCI score / $2^d$")
+    plt.savefig("chains_type_lociscores-adj_k" + str(k) +
                 "c" + str(nchains) + "d" + str(depth) + ".pdf",
                 bbox_inches="tight")
 
@@ -109,3 +182,34 @@ if __name__ == "__main__":
 
     average_precision = average_precision_score(y, anomalyscores)
     print "AP:", average_precision
+    
+    # adjusted anomaly score histogram
+    anomalyscores = -cf.score(Xnoisy, adjusted=True)
+
+    medians = np.zeros(len(CLASSES))
+    pct5s = np.zeros(len(CLASSES))
+    pct95s = np.zeros(len(CLASSES))
+    for idx, c in enumerate(CLASSES):
+        s = anomalyscores[c]
+        medians[idx] = np.percentile(s, q=50.0)
+        pct5s[idx] = np.percentile(s, q=5.0)
+        pct95s[idx] = np.percentile(s, q=95.0)
+
+    plt.figure()
+    xs = np.arange(depth) + 1.0
+    for idx in range(len(CLASSES)):
+        ms = medians[idx]
+        yerr = [[pct95s[idx] - ms], [ms - pct5s[idx]]]
+        plt.errorbar(x=[idx], y=[ms], yerr=yerr, label=str(idx), alpha=0.75,
+                     lw=3) 
+
+    plt.grid()
+    plt.legend(ncol=6, bbox_to_anchor=(1.05,1.15))
+    plt.xlabel(r"Point type")
+    plt.ylabel(r"anomaly score")
+    plt.savefig("chains_type_anomscores-adj_k" + str(k) +
+                "c" + str(nchains) + "d" + str(depth) + ".pdf",
+                bbox_inches="tight")
+
+    average_precision = average_precision_score(y, anomalyscores)
+    print "AP (adj):", average_precision
