@@ -606,52 +606,53 @@ When used as a plug-in replacement for sparse random projections in XStream on t
     \centering
 		\begin{subfigure}[t]{0.3\textwidth}
 				\centering
-				\includegraphics[width=\linewidth]{fig/chains_type_lociscores_k50c50d10.pdf}
-				\caption{Synthetic data, colored by point class}
+				\includegraphics[width=\linewidth]{fig/syndata.pdf}
+				\caption{Synthetic data.}
 		\end{subfigure}
-		\hfill
-    \begin{subfigure}[t]{0.3\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{fig/chains_type_lociscores_k50c50d10.pdf}
-        \caption{Locality-density-aware LOCI scores.}
-    \end{subfigure}
-		\hfill
-    \begin{subfigure}[t]{0.3\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{fig/chains_type_anomscores_k50c50d10.pdf}
-        \caption{Local-density-aware anomaly scores.}
-    \end{subfigure}\\
 		\begin{subfigure}[t]{0.3\textwidth}
 				\centering
-				\includegraphics[width=\linewidth]{fig/chains_type_lociscores_k50c50d10.pdf}
-				\caption{Synthetic data, colored by point class}
+				\includegraphics[width=\linewidth]{fig/chains_type_bincounts_k50c50d5.pdf}
+				\caption{Bin-counts.}
 		\end{subfigure}
 		\hfill
     \begin{subfigure}[t]{0.3\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{fig/chains_type_lociscores_k50c50d10.pdf}
-        \caption{Locality-density-aware LOCI scores.}
+        \includegraphics[width=\linewidth]{fig/chains_type_neighborbincounts_k50c50d5.pdf}
+        \caption{Neighbor bin-counts.}
+    \end{subfigure}\\
+    \begin{subfigure}[t]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/chains_type_adjustedbincounts_k50c50d5.pdf}
+        \caption{Adjusted bin-counts.}
     \end{subfigure}
 		\hfill
     \begin{subfigure}[t]{0.3\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{fig/chains_type_anomscores_k50c50d10.pdf}
-        \caption{Local-density-aware anomaly scores.}
+        \includegraphics[width=\linewidth]{fig/chains_type_anomscores_k50c50d5.pdf}
+        \caption{Anomaly scores.}
     \end{subfigure}
-    \caption{Score distributions for different point classes after addressing local density variation (see \S2.3 and \S2.7). Error bars indicate the median, 5$^{\textrm{th}}$ and 95$^{\textrm{th}}$ percentile scores across all points. Chains with $K=50, C=100, d=10$.}
+		\hfill
+    \begin{subfigure}[t]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/chains_type_anomscores-adj_k50c50d5.pdf}
+        \caption{Adjusted anomaly scores.}
+    \end{subfigure}
+    \caption{Score distributions for different point classes after addressing local density variation (see \S2.3 and \S2.7). Error bars indicate the median, 5$^{\textrm{th}}$ and 95$^{\textrm{th}}$ percentile scores across all points. Chains with $K=50, C=100, d=5$.}
 \end{figure*}
 \begin{wrapfigure}[12]{r}{0.25\textwidth}
     \centering
 		\includegraphics[width=\linewidth]{fig/grid.pdf}
     \caption{2-d grid.}
 \end{wrapfigure}
-Instead of adjusting the bin-count of each point $q$ with the mean bin-count of all other points, we could adjust it with the mean bin-count over \textit{neighboring bins}. This enables us to capture deviations in the \textit{local} density. However, for a given point $q$ having a $d$-element bin-id at depth $d$, there are $3^d -1$ possible neighboring bins; enumerating all of them is infeasible, and most of them would be empty.
+Instead of adjusting the bin-count of each point $j$ with the mean bin-count of all other points, we could adjust it with the mean bin-count over \textit{neighboring bins}. This enables us to capture deviations in the \textit{local} density.
 
-Instead, we could sample a fixed number of neighboring bins at random, such that the probability of sampling each neighboring bin is proportional to the likelihood of neighbors of $q$ lying in that bin This probability is proportional to the distance of the point $q$ to the edge of the neighboring bin (see $l_1$ and $l_2$ in Fig. 13: shaded neighboring bins are more likely to contain neighbors of the red point $q$).
+However, for a given point $j$ having a $d$-element bin-id at depth $d$, there are $3^d -1$ possible neighboring bins; enumerating all of them is infeasible, and most of them would be empty.
 
-Thus, for a point $q$ having a set of neighboring bins $\mathcal{N}(q)$, the LOCI score becomes:
+Instead, we could sample a fixed number of neighboring bins at random, such that the probability of sampling each neighboring bin is proportional to the likelihood of neighbors of $j$ lying in that bin This probability is proportional to the distance of the point $j$ to the edge of the neighboring bin (see $l_1$ and $l_2$ in Fig. 13: shaded neighboring bins are more likely to contain neighbors of the red point $j$). This idea was introduced as ``multi-probe LSH'' in \parencite{lv2007multi}.
+
+Thus, for a point $j$ having a set of neighboring bins $\mathcal{N}(j)$, the adjusted LOCI score becomes:
 \begin{eqnarray}
-	L_{id}(\bar{Y}_j) &=& \bar{H}_{id}(\bar{Y}_j) - \frac{1}{|\mathcal{N}(q)|}\sum_{\bar{Y}_k \in \mathcal{N}(q)}\bar{H}_{id}(\bar{Y}_k)
+	L_{id}(\bar{Y}_j) &=& \bar{H}_{id}(\bar{Y}_j) - \frac{1}{|\mathcal{N}(j)|}\sum_{\bar{Y}_k \in \mathcal{N}(q)}\bar{H}_{id}(\bar{Y}_k)
 \end{eqnarray}
 
 \pagebreak
