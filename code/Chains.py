@@ -4,6 +4,9 @@ from constants import *
 from sklearn.random_projection import SparseRandomProjection
 from StreamhashProjection import StreamhashProjection
 import numpy as np
+import pathos.pools as pp
+import tqdm
+tqdm.tqdm.monitor_interval = 0
 
 class Chain:
 
@@ -41,6 +44,7 @@ class Chain:
                     cmsketch[l] -= 1
                     assert cmsketch[l] >= 0
             self.cmsketches[depth] = cmsketch
+        return self
 
     def bincount(self, X):
         scores = np.zeros((X.shape[0], self.depth))
@@ -114,17 +118,25 @@ class Chains:
         projected_X = self.projector.fit_transform(X)
         deltamax = np.ptp(projected_X, axis=0)/2.0
         deltamax[deltamax==0] = 1.0
-        for i in range(self.nchains):
-            #print "Fitting chain", i, "..."
-            c = Chain(deltamax, depth=self.depth)
-            c.fit(projected_X)
-            self.chains.append(c)
+        if NJOBS > 0:
+            f = lambda proj: Chain(deltamax, depth=self.depth).fit(proj)
+            with pp.ProcessPool(NJOBS) as pool:
+                results = pool.uimap(f, [projected_X]*self.nchains)
+                pbar = tqdm.tqdm(total=self.nchains, desc='Fitting...')
+                for c in results:
+                    self.chains.append(c)
+                    pbar.update()
+        else:
+            for i in tqdm.tqdm(range(self.nchains), desc='Fitting...'):
+                c = Chain(deltamax, depth=self.depth)
+                c.fit(projected_X)
+                self.chains.append(c)
 
     def bincount(self, X):
         projected_X = self.projector.transform(X)
         scores = np.zeros((X.shape[0], self.depth))
-        for i, chain in enumerate(self.chains):
-            #print "Bincounting chain", i, "..."
+        for i in tqdm.tqdm(range(self.nchains), desc='Bincount...'):
+            chain = self.chains[i]
             scores += chain.bincount(projected_X)
         scores /= float(self.nchains)
         return scores
@@ -132,8 +144,8 @@ class Chains:
     def lociscore(self, X):
         projected_X = self.projector.transform(X)
         scores = np.zeros((X.shape[0], self.depth))
-        for i, chain in enumerate(self.chains):
-            print "LOCI chain", i, "..."
+        for i in tqdm.tqdm(range(self.nchains), desc='LOCI...'):
+            chain = self.chains[i]
             scores += chain.lociscore(projected_X)
         scores /= float(self.nchains)
         return scores
@@ -141,8 +153,17 @@ class Chains:
     def score(self, X):
         projected_X = self.projector.transform(X)
         scores = np.zeros(X.shape[0])
-        for i, chain in enumerate(self.chains):
-            #print "Scoring chain", i, "..."
-            scores += chain.score(projected_X)
+        if NJOBS > 0:
+            f = lambda chain, proj: chain.score(proj)
+            with pp.ProcessPool(NJOBS) as pool:
+                results = pool.uimap(f, self.chains, [projected_X]*self.nchains)
+                pbar = tqdm.tqdm(total=self.nchains, desc='Scoring...')
+                for s in results:
+                    scores += s
+                    pbar.update()
+        else:
+            for i in tqdm.tqdm(range(self.nchains), desc='Scoring...'):
+                chain = self.chains[i]
+                scores += chain.score(projected_X)
         scores /= float(self.nchains)
         return scores
