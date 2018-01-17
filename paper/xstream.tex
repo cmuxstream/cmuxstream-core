@@ -661,6 +661,27 @@ Thus, for a point $j$ having a set of neighboring bins $\mathcal{N}(j)$, the adj
 
 \pagebreak
 
+\subsection{Streaming evaluation}
+
+\begin{table}[ht!]
+	\centering
+	\begin{tabular}{llllll}
+	\toprule
+	\textbf{Dataset} & \textbf{Feature} & \textbf{Dynamic} & \textbf{No. of samples} 	& \textbf{Dimensionality} & \textbf{Anomaly}\\
+									 & \textbf{space}   & \textbf{updates} & \textbf{(incl. updates)} & \textbf{(maximum)} 			& \textbf{rate}\\
+	\midrule
+	http+smtp 			 & Fixed 	  		    & No				 & 720692 & 34   & 00.87\%\\
+ 	spam-sms 			 	 & Evolving 			  & No				 & 5574 	& ? 	 & 14.00\%\\
+ 	spam-url 			 	 & Evolving 				& No				 & 3.2M   & 2.4M & 33.00\%\\
+	streamspot 			 & Evolving 				& Yes				 & ?      & ?    & 20.00\%\\
+	\bottomrule
+	\end{tabular}
+	\caption{Datasets used for the streaming evaluation.}
+	\label{table:datasets}
+\end{table}
+
+\pagebreak
+
 \input{static}
 
 \input{dynamic}
