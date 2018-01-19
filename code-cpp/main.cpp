@@ -1,7 +1,12 @@
+#include <cassert>
 #include <chrono>
-#include <iostream>
-
 #include "docopt.h"
+#include "io.h"
+#include <iostream>
+#include <string>
+#include <tuple>
+#include "util.h"
+#include <vector>
 
 using namespace std;
 
@@ -13,6 +18,8 @@ R"(xstream.
               --k=<projection size>
               --c=<number of chains>
               --d=<depth> 
+              [--nfeatures=<number of features>]
+              [--nwindows=<number of windows>]
 
       xstream (-h | --help)
 
@@ -22,7 +29,13 @@ R"(xstream.
       --k=<projection size>             Projection size.
       --c=<number of chains>            Number of chains.
       --d=<depth>                       Depth.   
+      --nfeatures=<number of features>  Number of features, if fixed [default: -1].
+      --nwindows=<number of windows>    Number of windows [default: 0].
 )";
+
+
+void process_unknown(int);
+void process_fixed(int);
 
 int main(int argc, char *argv[]) {
   // arguments
@@ -38,25 +51,64 @@ int main(int argc, char *argv[]) {
   uint32_t k = args["--k"].asLong();
   uint32_t c = args["--c"].asLong();
   uint32_t d = args["--d"].asLong();
-
-  cout << "xstream: "
-       << "K=" << k << " C=" << c << " d=" << d << endl;
-  cout << "input: " << input_file << endl;
-
-  // read input 
-
-  // construct auxiliary data structures
   
-  // set up universal hash family for StreamHash
+  int nfeatures = -1; // non-fixed feature space by default
+  if (args.find("--nfeatures") != args.end()) {
+    nfeatures = args["--nfeatures"].asLong();
+  }
+  
+  int nwindows = 0; // no windows by default
+  if (args.find("--nwindows") != args.end()) {
+    nwindows = args["--nwindows"].asLong();
+  }
+
+  cerr << "xstream: "
+       << "K=" << k << " C=" << c << " d=" << d << endl;
+  cerr << "\tinput: " << input_file << endl;
+  cerr << "\tno. of features: " << nfeatures << endl;
+  cerr << "\tno. of windows: " << nwindows << endl;
 
   // construct chains
+    
+  if (nfeatures > 0) {
+    // fixed feature space
+    
+    // read input
+    vector<vector<float>> X;
+    vector<bool> Y;
+    tie(X, Y) = input_fixed(input_file);
 
-  // stream in edges
-  //cout << "Streaming in " << num_test_edges << " tuples:" << endl;
-  // LOOP
-  //  process edge
-  //    update chains
-  //    update scores
+#ifdef VERBOSE
+    for (uint i = 0; i < X.size(); i++) {
+      vector<float> x = X[i];
+      for (const auto& v: x) {
+        cout << v << ",";
+      }
+      cout << "\t" << Y[i] << endl;
+    }
+#endif 
+
+    // construct auxiliary data structures
+
+    // set deltamax using a sample
+
+    // stream in edges
+    //cerr << "Streaming in " << num_test_edges << " tuples:" << endl;
+    // LOOP
+    //  process edge
+    //    update chains
+    //    update scores
+    process_fixed(nwindows);
+  } else {
+    // unknown feature space
+    process_unknown(nwindows);
+  }
 
   return 0;
+}
+
+void process_fixed(int nwindows) {
+}
+
+void process_unknown(int nwindows) {
 }
