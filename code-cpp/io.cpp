@@ -36,16 +36,6 @@ tuple<vector<vector<float>>, vector<bool>>
 
     f.close();
 
-#ifdef VERBOSE
-    for (uint i = 0; i < X.size(); i++) {
-      vector<float> x = X[i];
-      for (const auto& v: x) {
-        cout << v << ",";
-      }
-      cout << "\t" << Y[i] << endl;
-    }
-#endif
-
     return make_tuple(X, Y);
   }
 
