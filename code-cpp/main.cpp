@@ -148,6 +148,7 @@ int main(int argc, char *argv[]) {
     for (uint i = 0; i < c; i++) {
       for (uint j = 0; j < k; j++) {
         deltamax[i][j] = (dim_max[j] - dim_min[j])/2.0;
+        if (abs(deltamax[i][j]) <= EPSILON) deltamax[i][j] = 1.0;
         uniform_real_distribution<> dis(0, deltamax[i][j]);
         shift[i][j] = dis(prng);
       }
