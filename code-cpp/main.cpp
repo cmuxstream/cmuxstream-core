@@ -24,7 +24,7 @@ R"(xstream.
               --k=<projection size>
               --c=<number of chains>
               --d=<depth> 
-              [--nfeatures=<number of features>]
+              [--fixed]
               [--nwindows=<number of windows>]
 
       xstream (-h | --help)
@@ -35,7 +35,7 @@ R"(xstream.
       --k=<projection size>             Projection size.
       --c=<number of chains>            Number of chains.
       --d=<depth>                       Depth.   
-      --nfeatures=<number of features>  Number of features, if fixed [default: -1].
+      --fixed                           Fixed feature space.
       --nwindows=<number of windows>    Number of windows [default: 0].
 )";
 
@@ -61,22 +61,19 @@ int main(int argc, char *argv[]) {
   uint k = args["--k"].asLong();
   uint c = args["--c"].asLong();
   uint d = args["--d"].asLong();
-  
-  int nfeatures = -1; // non-fixed feature space by default
-  if (args.find("--nfeatures") != args.end()) {
-    nfeatures = args["--nfeatures"].asLong();
-  }
-  
+  bool fixed = args["--fixed"].asBool();
+
   int nwindows = 0; // no windows by default
   if (args.find("--nwindows") != args.end()) {
     nwindows = args["--nwindows"].asLong();
   }
 
   cerr << "xstream: "
-       << "K=" << k << " C=" << c << " d=" << d << endl;
-  cerr << "\tinput: " << input_file << endl;
-  cerr << "\tno. of features: " << nfeatures << endl;
-  cerr << "\tno. of windows: " << nwindows << endl;
+       << "K=" << k << " C=" << c << " d=" << d
+       << " windows=" << nwindows << endl;
+  cerr << "\tinput: " << input_file << " ";
+  if (fixed) cerr << "(fixed feature space)";
+  cerr << endl;
 
   // initialize chains
   cerr << "initializing... ";
@@ -103,7 +100,7 @@ int main(int argc, char *argv[]) {
   cerr << "done in " << diff.count() << "ns" << endl;
 
   // input stream
-  if (nfeatures > 0) {
+  if (fixed) {
     // fixed feature space
 
     // read input
@@ -157,7 +154,7 @@ int main(int argc, char *argv[]) {
     }
 
     // stream in edges
-    cerr << "streaming in " << nrows << " tuples... " << endl;
+    cerr << "streaming in " << nrows << " tuples... ";
     start = chrono::steady_clock::now();
     for (uint row_idx = 0; row_idx < nrows; row_idx++) {
       int b;
