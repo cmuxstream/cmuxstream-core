@@ -1,10 +1,15 @@
 #include <cassert>
+#include "chain.h"
 #include <chrono>
 #include "docopt.h"
 #include "io.h"
 #include <iostream>
+#include "param.h"
+#include <random>
+#include "streamhash.h"
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include "util.h"
 #include <vector>
 
@@ -38,6 +43,14 @@ void process_unknown(int);
 void process_fixed(int);
 
 int main(int argc, char *argv[]) {
+  // utility elements
+#ifdef SEED
+  mt19937_64 prng(SEED);
+#else
+  random_device rd;
+  mt19937_64 prng(rd());
+#endif
+
   // arguments
   map<string, docopt::value> args = docopt::docopt(USAGE, { argv + 1, argv + argc });
 
@@ -48,9 +61,9 @@ int main(int argc, char *argv[]) {
 
   // store argumetns
   string input_file(args["--input"].asString());
-  uint32_t k = args["--k"].asLong();
-  uint32_t c = args["--c"].asLong();
-  uint32_t d = args["--d"].asLong();
+  uint k = args["--k"].asLong();
+  uint c = args["--c"].asLong();
+  uint d = args["--d"].asLong();
   
   int nfeatures = -1; // non-fixed feature space by default
   if (args.find("--nfeatures") != args.end()) {
@@ -68,18 +81,43 @@ int main(int argc, char *argv[]) {
   cerr << "\tno. of features: " << nfeatures << endl;
   cerr << "\tno. of windows: " << nwindows << endl;
 
-  // construct chains
-    
+  // initialize chains
+  cerr << "initializing... ";
+  start = chrono::steady_clock::now();
+
+  vector<vector<float>> deltamax(c, vector<float>(k, 0.0));
+  vector<vector<float>> shift(c, vector<float>(k, 0.0));
+  vector<vector<unordered_map<string,int>>> cmsketches(c, vector<unordered_map<string,int>>(d));
+  vector<vector<uint>> fs(c, vector<uint>(d, 0));
+  vector<vector<uint64_t>> h(c, vector<uint64_t>(k, 0));
+  float density_constant = streamhash_compute_constant(DENSITY, k);
+
+#ifdef VERBOSE
+  string s("test");
+  cout << "Empirical density = ";
+  cout << streamhash_empirical_density(s, prng, DENSITY, density_constant) << endl;
+#endif
+
+  streamhash_init_seeds(h, prng);
+  chains_init_features(fs, k, prng);
+
+  end = chrono::steady_clock::now();
+  diff = chrono::duration_cast<chrono::nanoseconds>(end - start);
+  cerr << "done in " << diff.count() << "ns" << endl;
+
+  // input stream
   if (nfeatures > 0) {
     // fixed feature space
-    
+
     // read input
     vector<vector<float>> X;
     vector<bool> Y;
     tie(X, Y) = input_fixed(input_file);
+    uint nrows = X.size();
+    uint ndims = X[0].size();
 
 #ifdef VERBOSE
-    for (uint i = 0; i < X.size(); i++) {
+    for (uint i = 0; i < nrows; i++) {
       vector<float> x = X[i];
       for (const auto& v: x) {
         cout << v << ",";
@@ -89,8 +127,12 @@ int main(int argc, char *argv[]) {
 #endif 
 
     // construct auxiliary data structures
-
-    // set deltamax using a sample
+    vector<int> bincounts(nrows);
+    vector<float> lociscores(nrows);
+    vector<float> anomalyscores(nrows);
+    
+    // set deltamax using an initial sample
+    //chains_init_deltamax(X, INIT_SAMPLE_SIZE, deltamax, shift, prng);
 
     // stream in edges
     //cerr << "Streaming in " << num_test_edges << " tuples:" << endl;
@@ -98,17 +140,9 @@ int main(int argc, char *argv[]) {
     //  process edge
     //    update chains
     //    update scores
-    process_fixed(nwindows);
   } else {
     // unknown feature space
-    process_unknown(nwindows);
   }
 
   return 0;
-}
-
-void process_fixed(int nwindows) {
-}
-
-void process_unknown(int nwindows) {
 }

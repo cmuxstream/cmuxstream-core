@@ -8,7 +8,7 @@ OBJS := $(SOURCES:.cpp=.o)
 optimized: CFLAGS += -Ofast -march=native -mtune=native
 optimized: xstream 
 
-debug: CFLAGS += -DDEBUG -DVERBOSE -g
+debug: CFLAGS += -DDEBUG -g
 debug: xstream
 
 xstream: $(OBJS)
