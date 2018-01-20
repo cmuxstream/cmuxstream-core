@@ -39,10 +39,6 @@ R"(xstream.
       --nwindows=<number of windows>    Number of windows [default: 0].
 )";
 
-
-void process_unknown(int);
-void process_fixed(int);
-
 int main(int argc, char *argv[]) {
   // utility elements
 #ifdef SEED
@@ -151,19 +147,33 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    // initialize deltmax to half the projection range
+    // initialize deltamax to half the projection range, shift ~ U(0, dmax)
     for (uint i = 0; i < c; i++) {
       for (uint j = 0; j < k; j++) {
         deltamax[i][j] = (dim_max[j] - dim_min[j])/2.0;
+        uniform_real_distribution<> dis(0, deltamax[i][j]);
+        shift[i][j] = dis(prng);
       }
     }
 
     // stream in edges
-    //cerr << "Streaming in " << num_test_edges << " tuples:" << endl;
-    // LOOP
-    //  process edge
-    //    update chains
-    //    update scores
+    cerr << "streaming in " << nrows << " tuples... " << endl;
+    start = chrono::steady_clock::now();
+    for (uint row_idx = 0; row_idx < nrows; row_idx++) {
+      int b;
+      float l, s;
+      tie(b, l, s) = chains_add(X[row_idx], feature_names, h, DENSITY,
+                                density_constant, deltamax, shift,
+                                cmsketches);
+      bincounts[row_idx] = b;
+      lociscores[row_idx] = l;
+      anomalyscores[row_idx] = s;
+    }
+    end = chrono::steady_clock::now();
+    diff = chrono::duration_cast<chrono::nanoseconds>(end - start);
+    cerr << "done in " << diff.count() << "ns" << endl;
+
+    // done
   } else {
     // unknown feature space
   }
