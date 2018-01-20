@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
   vector<vector<float>> shift(c, vector<float>(k, 0.0));
   vector<vector<unordered_map<string,int>>> cmsketches(c, vector<unordered_map<string,int>>(d));
   vector<vector<uint>> fs(c, vector<uint>(d, 0));
-  vector<vector<uint64_t>> h(c, vector<uint64_t>(k, 0));
+  vector<uint64_t> h(k, 0);
   float density_constant = streamhash_compute_constant(DENSITY, k);
 
 #ifdef VERBOSE

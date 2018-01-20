@@ -8,7 +8,7 @@
 namespace std {
 
   void
-  streamhash_init_seeds(vector<vector<uint64_t>>& h, mt19937_64& prng);
+  streamhash_init_seeds(vector<uint64_t>& h, mt19937_64& prng);
 
   float
   streamhash_compute_constant(float density, uint k);

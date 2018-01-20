@@ -15,13 +15,10 @@
 namespace std {
 
   void
-  streamhash_init_seeds(vector<vector<uint64_t>>& h, mt19937_64& prng) {
-    uint c = h.size();
-    uint k = h[0].size();
-    for (uint c_i = 0; c_i < c; c_i++) {
-      for (uint k_i = 0; k_i < k; k_i++) {
-        h[c_i][k_i] = prng();
-      }
+  streamhash_init_seeds(vector<uint64_t>& h, mt19937_64& prng) {
+    uint k = h.size();
+    for (uint k_i = 0; k_i < k; k_i++) {
+      h[k_i] = prng();
     }
   }
 
