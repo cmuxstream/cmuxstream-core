@@ -4,6 +4,7 @@
 #include "docopt.h"
 #include "io.h"
 #include <iostream>
+#include <limits>
 #include "param.h"
 #include <random>
 #include "streamhash.h"
@@ -130,9 +131,32 @@ int main(int argc, char *argv[]) {
     vector<int> bincounts(nrows);
     vector<float> lociscores(nrows);
     vector<float> anomalyscores(nrows);
-    
-    // set deltamax using an initial sample
-    //chains_init_deltamax(X, INIT_SAMPLE_SIZE, deltamax, shift, prng);
+
+    // construct feature names
+    vector<string> feature_names(ndims);
+    for (uint i = 0; i < ndims; i++) {
+      feature_names[i] = to_string(i);
+    }
+
+    // construct projection of an initial sample, compute projection range
+    vector<vector<float>> Xpsample(INIT_SAMPLE_SIZE, vector<float>(k, 0.0));
+    vector<float> dim_min(k, numeric_limits<float>::max());
+    vector<float> dim_max(k, numeric_limits<float>::min());
+    for (uint i = 0; i < INIT_SAMPLE_SIZE; i++) {
+      Xpsample[i] = streamhash_project(X[i], feature_names, h, DENSITY,
+                                       density_constant);
+      for (uint j = 0; j < k; j++) {
+        if (Xpsample[i][j] > dim_max[j]) { dim_max[j] = Xpsample[i][j]; }
+        if (Xpsample[i][j] < dim_min[j]) { dim_min[j] = Xpsample[i][j]; }
+      }
+    }
+
+    // initialize deltmax to half the projection range
+    for (uint i = 0; i < c; i++) {
+      for (uint j = 0; j < k; j++) {
+        deltamax[i][j] = (dim_max[j] - dim_min[j])/2.0;
+      }
+    }
 
     // stream in edges
     //cerr << "Streaming in " << num_test_edges << " tuples:" << endl;

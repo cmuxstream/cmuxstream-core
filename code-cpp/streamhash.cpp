@@ -60,4 +60,19 @@ namespace std {
     return nonzeros/ntrials; 
   }
 
+  vector<float>
+  streamhash_project(vector<float>& x, vector<string>& feature_names,
+                     vector<uint64_t>& h, float density, float constant) {
+    uint k = h.size();
+    uint dims = x.size();
+    vector<float> xp(k, 0.0);
+    for (uint i = 0; i < k; i++) {
+      for (uint j = 0; j < dims; j++) {
+        xp[i] += (x[j] *  streamhash_hash(feature_names[j], h[i],
+                                          density, constant));
+      }
+    }
+    return xp;
+  }
+
 }

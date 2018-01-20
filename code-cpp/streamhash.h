@@ -20,5 +20,8 @@ namespace std {
   streamhash_empirical_density(string& s, mt19937_64& prng, float density,
                                float constant);
 
+  vector<float>
+  streamhash_project(vector<float>& x, vector<string>& feature_names,
+                     vector<uint64_t>& h, float density, float constant);
 }
 #endif
