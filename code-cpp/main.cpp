@@ -4,6 +4,7 @@
 #include "docopt.h"
 #include "hash.h"
 #include "io.h"
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include "param.h"
@@ -135,7 +136,7 @@ int main(int argc, char *argv[]) {
     }
 
     // construct projection of an initial sample, compute projection range
-    cerr << "Initializing deltamax from sample..." << endl;
+    cerr << "Initializing deltamax from sample size " << INIT_SAMPLE_SIZE << "..." << endl;
     vector<vector<float>> Xpsample(INIT_SAMPLE_SIZE, vector<float>(k, 0.0));
     vector<float> dim_min(k, numeric_limits<float>::max());
     vector<float> dim_max(k, numeric_limits<float>::min());
@@ -158,7 +159,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    // stream in edges
+    // stream in tuples
     cerr << "streaming in " << nrows << " tuples... ";
     start = chrono::steady_clock::now();
     for (uint row_idx = 0; row_idx < nrows; row_idx++) {
@@ -166,7 +167,23 @@ int main(int argc, char *argv[]) {
       float lociscore, anomalyscore;
       tie(bincount, lociscore, anomalyscore) = chains_add(X[row_idx], feature_names, h, DENSITY,
                                                           density_constant, deltamax, shift,
-                                                          cmsketches, fs);
+                                                          cmsketches, fs, true);
+      //lociscores[row_idx] = l;
+      //anomalyscores[row_idx] = s;
+    }
+    end = chrono::steady_clock::now();
+    diff = chrono::duration_cast<chrono::milliseconds>(end - start);
+    cerr << "done in " << diff.count() << "ms" << endl;
+
+    // score tuples
+    cerr << "scoring " << nrows << " tuples... ";
+    start = chrono::steady_clock::now();
+    for (uint row_idx = 0; row_idx < nrows; row_idx++) {
+      vector<float> bincount;
+      float lociscore, anomalyscore;
+      tie(bincount, lociscore, anomalyscore) = chains_add(X[row_idx], feature_names, h, DENSITY,
+                                                          density_constant, deltamax, shift,
+                                                          cmsketches, fs, false);
       bincounts[row_idx] = bincount;
       //lociscores[row_idx] = l;
       //anomalyscores[row_idx] = s;
@@ -176,6 +193,14 @@ int main(int argc, char *argv[]) {
     cerr << "done in " << diff.count() << "ms" << endl;
 
     // done
+
+    // debug: print bincounts at each depth
+    /*for (uint row_idx = 0; row_idx < nrows; row_idx++) {
+      for (auto b : bincounts[row_idx]) {
+        cout << setprecision(12) << b << " ";
+      }
+      cout << endl;
+    }*/
   } else {
     // unknown feature space
   }

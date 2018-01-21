@@ -29,7 +29,7 @@ namespace std {
              vector<uint64_t>& h, float density, float constant,
              vector<vector<float>>& deltamax, vector<vector<float>>& shift,
              vector<vector<unordered_map<vector<int>,int>>>& cmsketches,
-             vector<vector<uint>>& fs) {
+             vector<vector<uint>>& fs, bool update) {
 
     uint k = h.size();
     uint nchains = cmsketches.size();
@@ -58,7 +58,10 @@ namespace std {
         for (uint i = 0; i < k; i++) {
           bin[i] = static_cast<int>(floor(prebin[i]));
         }
-        cmsketches[c][d][bin]++;
+        if (update) {
+          cmsketches[c][d][bin]++;
+        }
+
         bincount[d] += cmsketches[c][d][bin];
       }
     }

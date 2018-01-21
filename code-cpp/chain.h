@@ -17,7 +17,7 @@ namespace std {
              vector<uint64_t>& h, float density, float constant,
              vector<vector<float>>& deltamax, vector<vector<float>>& shift,
              vector<vector<unordered_map<vector<int>,int>>>& cmsketches,
-             vector<vector<uint>>& fs);
+             vector<vector<uint>>& fs, bool update);
 }
 
 #endif
