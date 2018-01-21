@@ -28,17 +28,19 @@ R"(xstream.
               --d=<depth> 
               [--fixed]
               [--nwindows=<number of windows>]
+              [--initsample=<initial sample size>]
 
       xstream (-h | --help)
 
     Options:
-      -h, --help                        Show this screen.
-      --input=<input file>              Input file.
-      --k=<projection size>             Projection size.
-      --c=<number of chains>            Number of chains.
-      --d=<depth>                       Depth.   
-      --fixed                           Fixed feature space.
-      --nwindows=<number of windows>    Number of windows [default: 0].
+      -h, --help                          Show this screen.
+      --input=<input file>                Input file.
+      --k=<projection size>               Projection size.
+      --c=<number of chains>              Number of chains.
+      --d=<depth>                         Depth.
+      --fixed                             Fixed feature space.
+      --nwindows=<number of windows>      Number of windows [default: 0].
+      --initsample=<initial sample size>  Initial sample size [default: -1].
 )";
 
 int main(int argc, char *argv[]) {
@@ -68,6 +70,11 @@ int main(int argc, char *argv[]) {
   int nwindows = 0; // no windows by default
   if (args.find("--nwindows") != args.end()) {
     nwindows = args["--nwindows"].asLong();
+  }
+
+  int init_sample_size = -1;
+  if (args.find("--initsample") != args.end()) {
+    init_sample_size = args["--initsample"].asLong();
   }
 
   cerr << "xstream: "
@@ -138,11 +145,14 @@ int main(int argc, char *argv[]) {
     }
 
     // construct projection of an initial sample, compute projection range
-    cerr << "Initializing deltamax from sample size " << INIT_SAMPLE_SIZE << "..." << endl;
-    vector<vector<float>> Xpsample(INIT_SAMPLE_SIZE, vector<float>(k, 0.0));
+    if (init_sample_size < 0) {
+      init_sample_size = nrows;
+    }
+    cerr << "Initializing deltamax from sample size " << init_sample_size << "..." << endl;
+    vector<vector<float>> Xpsample(init_sample_size, vector<float>(k, 0.0));
     vector<float> dim_min(k, numeric_limits<float>::max());
     vector<float> dim_max(k, numeric_limits<float>::min());
-    for (uint i = 0; i < INIT_SAMPLE_SIZE; i++) {
+    for (int i = 0; i < init_sample_size; i++) {
       Xpsample[i] = streamhash_project(X[i], feature_names, h, DENSITY,
                                        density_constant);
       for (uint j = 0; j < k; j++) {
@@ -197,8 +207,8 @@ int main(int argc, char *argv[]) {
     // debug: check distance approximation
     /*vector<float> true_distances;
     vector<float> approx_distances;
-    for (uint i = 0; i < INIT_SAMPLE_SIZE; i++) {
-      for (uint j = 0; j < INIT_SAMPLE_SIZE; j++) {
+    for (uint i = 0; i < init_sample_size; i++) {
+      for (uint j = 0; j < init_sample_size; j++) {
         true_distances.push_back(euclidean_distance(X[i], X[j]));
         approx_distances.push_back(euclidean_distance(Xpsample[i], Xpsample[j]));
       }
