@@ -2,6 +2,7 @@
 #include "chain.h"
 #include <chrono>
 #include "docopt.h"
+#include "hash.h"
 #include "io.h"
 #include <iostream>
 #include <limits>
@@ -54,7 +55,7 @@ int main(int argc, char *argv[]) {
   // for timing
   chrono::time_point<chrono::steady_clock> start;
   chrono::time_point<chrono::steady_clock> end;
-  chrono::nanoseconds diff; 
+  chrono::milliseconds diff;
 
   // store argumetns
   string input_file(args["--input"].asString());
@@ -81,7 +82,8 @@ int main(int argc, char *argv[]) {
 
   vector<vector<float>> deltamax(c, vector<float>(k, 0.0));
   vector<vector<float>> shift(c, vector<float>(k, 0.0));
-  vector<vector<unordered_map<string,int>>> cmsketches(c, vector<unordered_map<string,int>>(d));
+  vector<vector<unordered_map<vector<int>,int>>> cmsketches(c,
+                                                          vector<unordered_map<vector<int>,int>>(d));
   vector<vector<uint>> fs(c, vector<uint>(d, 0));
   vector<uint64_t> h(k, 0);
   float density_constant = streamhash_compute_constant(DENSITY, k);
@@ -96,14 +98,15 @@ int main(int argc, char *argv[]) {
   chains_init_features(fs, k, prng);
 
   end = chrono::steady_clock::now();
-  diff = chrono::duration_cast<chrono::nanoseconds>(end - start);
-  cerr << "done in " << diff.count() << "ns" << endl;
+  diff = chrono::duration_cast<chrono::milliseconds>(end - start);
+  cerr << "done in " << diff.count() << "ms" << endl;
 
   // input stream
   if (fixed) {
     // fixed feature space
 
     // read input
+    cerr << "Reading input tuples..." << endl;
     vector<vector<float>> X;
     vector<bool> Y;
     tie(X, Y) = input_fixed(input_file);
@@ -121,7 +124,7 @@ int main(int argc, char *argv[]) {
 #endif 
 
     // construct auxiliary data structures
-    vector<int> bincounts(nrows);
+    vector<vector<float>> bincounts(nrows, vector<float>(d));
     vector<float> lociscores(nrows);
     vector<float> anomalyscores(nrows);
 
@@ -132,6 +135,7 @@ int main(int argc, char *argv[]) {
     }
 
     // construct projection of an initial sample, compute projection range
+    cerr << "Initializing deltamax from sample..." << endl;
     vector<vector<float>> Xpsample(INIT_SAMPLE_SIZE, vector<float>(k, 0.0));
     vector<float> dim_min(k, numeric_limits<float>::max());
     vector<float> dim_max(k, numeric_limits<float>::min());
@@ -158,18 +162,18 @@ int main(int argc, char *argv[]) {
     cerr << "streaming in " << nrows << " tuples... ";
     start = chrono::steady_clock::now();
     for (uint row_idx = 0; row_idx < nrows; row_idx++) {
-      int b;
-      float l, s;
-      tie(b, l, s) = chains_add(X[row_idx], feature_names, h, DENSITY,
-                                density_constant, deltamax, shift,
-                                cmsketches);
-      bincounts[row_idx] = b;
-      lociscores[row_idx] = l;
-      anomalyscores[row_idx] = s;
+      vector<float> bincount;
+      float lociscore, anomalyscore;
+      tie(bincount, lociscore, anomalyscore) = chains_add(X[row_idx], feature_names, h, DENSITY,
+                                                          density_constant, deltamax, shift,
+                                                          cmsketches, fs);
+      bincounts[row_idx] = bincount;
+      //lociscores[row_idx] = l;
+      //anomalyscores[row_idx] = s;
     }
     end = chrono::steady_clock::now();
-    diff = chrono::duration_cast<chrono::nanoseconds>(end - start);
-    cerr << "done in " << diff.count() << "ns" << endl;
+    diff = chrono::duration_cast<chrono::milliseconds>(end - start);
+    cerr << "done in " << diff.count() << "ms" << endl;
 
     // done
   } else {
