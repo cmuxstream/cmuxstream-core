@@ -29,18 +29,20 @@ R"(xstream.
               [--fixed]
               [--nwindows=<number of windows>]
               [--initsample=<initial sample size>]
+              [--scoringbatch=<scoring batch size>]
 
       xstream (-h | --help)
 
     Options:
-      -h, --help                          Show this screen.
-      --input=<input file>                Input file.
-      --k=<projection size>               Projection size.
-      --c=<number of chains>              Number of chains.
-      --d=<depth>                         Depth.
-      --fixed                             Fixed feature space.
-      --nwindows=<number of windows>      Number of windows [default: 0].
-      --initsample=<initial sample size>  Initial sample size [default: -1].
+      -h, --help                           Show this screen.
+      --input=<input file>                 Input file.
+      --k=<projection size>                Projection size.
+      --c=<number of chains>               Number of chains.
+      --d=<depth>                          Depth.
+      --fixed                              Fixed feature space.
+      --nwindows=<number of windows>       Number of windows [default: 0].
+      --initsample=<initial sample size>   Initial sample size [default: -1].
+      --scoringbatch=<scoring batch size>  Scoring batch size [default: 1000].
 )";
 
 int main(int argc, char *argv[]) {
@@ -67,15 +69,9 @@ int main(int argc, char *argv[]) {
   uint d = args["--d"].asLong();
   bool fixed = args["--fixed"].asBool();
 
-  int nwindows = 0; // no windows by default
-  if (args.find("--nwindows") != args.end()) {
-    nwindows = args["--nwindows"].asLong();
-  }
-
-  int init_sample_size = -1;
-  if (args.find("--initsample") != args.end()) {
-    init_sample_size = args["--initsample"].asLong();
-  }
+  int nwindows = args["--nwindows"].asLong(); // no windows by default
+  int init_sample_size = args["--initsample"].asLong(); // full data size by default
+  uint scoring_batch_size = args["--scoringbatch"].asLong(); // 1000 by default
 
   cerr << "xstream: "
        << "K=" << k << " C=" << c << " d=" << d
@@ -83,6 +79,7 @@ int main(int argc, char *argv[]) {
   cerr << "\tinput: " << input_file << " ";
   if (fixed) cerr << "(fixed feature space)";
   cerr << endl;
+  cerr << "\tscoring every: " << scoring_batch_size << " tuples" << endl;
 
   // initialize chains
   cerr << "initializing... ";
@@ -136,7 +133,6 @@ int main(int argc, char *argv[]) {
     // construct auxiliary data structures
     vector<vector<float>> bincounts(nrows, vector<float>(d));
     vector<vector<float>> lociscores(nrows, vector<float>(d));
-    vector<float> anomalyscores(nrows);
 
     // construct feature names
     vector<string> feature_names(ndims);
@@ -175,29 +171,47 @@ int main(int argc, char *argv[]) {
     cerr << "streaming in " << nrows << " tuples... ";
     start = chrono::steady_clock::now();
     for (uint row_idx = 0; row_idx < nrows; row_idx++) {
-      vector<float> bincount, lociscore;
+      //vector<float> bincount, lociscore;
       float anomalyscore;
-      tie(bincount, lociscore, anomalyscore, npoints) =
+      //tie(bincount, lociscore, anomalyscore, npoints) =
+      tie(anomalyscore, npoints) =
         chains_add(X[row_idx], feature_names, h, DENSITY, density_constant, deltamax, shift,
                    cmsketches, fs, mean_bincount, npoints, true);
+
+      if ((row_idx > 0) && (row_idx % scoring_batch_size == 0)) {
+        cout << row_idx + 1 << "\t";
+        for (uint row_idx2 = 0; row_idx2 <= row_idx; row_idx2++) {
+          float anomalyscore;
+          tie(anomalyscore, npoints) =
+            chains_add(X[row_idx2], feature_names, h, DENSITY, density_constant, deltamax, shift,
+                       cmsketches, fs, mean_bincount, npoints, false);
+          cout << setprecision(12) << anomalyscore << " ";
+        }
+        cout << endl;
+      }
     }
     end = chrono::steady_clock::now();
     diff = chrono::duration_cast<chrono::milliseconds>(end - start);
     cerr << "done in " << diff.count() << "ms" << endl;
 
-    // score tuples
+    // score tuples at the end
     cerr << "scoring " << nrows << " tuples... ";
     start = chrono::steady_clock::now();
+    //vector<float> anomalyscores(nrows);
+    cout << nrows << "\t";
     for (uint row_idx = 0; row_idx < nrows; row_idx++) {
-      vector<float> bincount, lociscore;
+      //vector<float> bincount, lociscore;
       float anomalyscore;
-      tie(bincount, lociscore, anomalyscore, npoints) =
+      //tie(bincount, lociscore, anomalyscore, npoints) =
+      tie(anomalyscore, npoints) =
         chains_add(X[row_idx], feature_names, h, DENSITY, density_constant, deltamax, shift,
                    cmsketches, fs, mean_bincount, npoints, false);
-      bincounts[row_idx] = bincount;
-      lociscores[row_idx] = lociscore;
-      anomalyscores[row_idx] = anomalyscore;
+      cout << setprecision(12) << anomalyscore << " ";
+      //bincounts[row_idx] = bincount;
+      //lociscores[row_idx] = lociscore;
+      //anomalyscores[row_idx] = anomalyscore;
     }
+    cout << endl;
     end = chrono::steady_clock::now();
     diff = chrono::duration_cast<chrono::milliseconds>(end - start);
     cerr << "done in " << diff.count() << "ms" << endl;

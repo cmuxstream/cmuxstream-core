@@ -24,7 +24,8 @@ namespace std {
     }
   }
 
-  tuple<vector<float>,vector<float>,float,float>
+  //tuple<vector<float>,vector<float>,float,float>
+  tuple<float,float>
   chains_add(vector<float>& x, vector<string>& feature_names,
              vector<uint64_t>& h, float density, float constant,
              vector<vector<float>>& deltamax, vector<vector<float>>& shift,
@@ -39,8 +40,8 @@ namespace std {
     vector<vector<float>> bincount(nchains, vector<float>(depth));
     vector<vector<float>> lociscore(nchains, vector<float>(depth));
     vector<float> anomalyscore(nchains, numeric_limits<float>::max());
-    vector<float> avg_bincount(depth);
-    vector<float> avg_lociscore(depth);
+    //vector<float> avg_bincount(depth);
+    //vector<float> avg_lociscore(depth);
     float avg_anomalyscore = 0.0;
 
     vector<float> xp = streamhash_project(x, feature_names, h, density,
@@ -74,8 +75,8 @@ namespace std {
         lociscore[c][d] = (bincount[c][d] - (1.0/N) * mean_bincount[c][d])
                             * pow(2.0, d+1);
 
-        avg_bincount[d] += bincount[c][d];
-        avg_lociscore[d] += lociscore[c][d];
+        //avg_bincount[d] += bincount[c][d];
+        //avg_lociscore[d] += lociscore[c][d];
         if (lociscore[c][d] < anomalyscore[c]) {
           anomalyscore[c] = lociscore[c][d];
         }
@@ -86,12 +87,13 @@ namespace std {
     if (update) { npoints += 1; }
 
     avg_anomalyscore /= nchains;
-    for (uint d = 0; d < depth; d++) {
-      avg_bincount[d] /= nchains;
-      avg_lociscore[d] /= nchains;
-    }
+    //for (uint d = 0; d < depth; d++) {
+    //  avg_bincount[d] /= nchains;
+    //  avg_lociscore[d] /= nchains;
+    //}
 
-    return make_tuple(avg_bincount, avg_lociscore, avg_anomalyscore, npoints);
+    //return make_tuple(avg_bincount, avg_lociscore, avg_anomalyscore, npoints);
+    return make_tuple(avg_anomalyscore, npoints);
   }
 
 }

@@ -12,7 +12,8 @@ namespace std {
   void
   chains_init_features(vector<vector<uint>>& fs, uint k, mt19937_64& prng);
   
-  tuple<vector<float>,vector<float>,float,float>
+  //tuple<vector<float>,vector<float>,float,float>
+  tuple<float,float>
   chains_add(vector<float>& x, vector<string>& feature_names,
              vector<uint64_t>& h, float density, float constant,
              vector<vector<float>>& deltamax, vector<vector<float>>& shift,
