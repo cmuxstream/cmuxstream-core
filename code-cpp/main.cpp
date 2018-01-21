@@ -194,13 +194,27 @@ int main(int argc, char *argv[]) {
 
     // done
 
+    // debug: check distance approximation
+    /*vector<float> true_distances;
+    vector<float> approx_distances;
+    for (uint i = 0; i < INIT_SAMPLE_SIZE; i++) {
+      for (uint j = 0; j < INIT_SAMPLE_SIZE; j++) {
+        true_distances.push_back(euclidean_distance(X[i], X[j]));
+        approx_distances.push_back(euclidean_distance(Xpsample[i], Xpsample[j]));
+      }
+    }
+    for (uint i = 0; i < true_distances.size(); i++)
+      cout << setprecision(6) << true_distances[i] << " " << approx_distances[i] << endl;
+    */
+
     // debug: print bincounts at each depth
     /*for (uint row_idx = 0; row_idx < nrows; row_idx++) {
       for (auto b : bincounts[row_idx]) {
         cout << setprecision(12) << b << " ";
       }
       cout << endl;
-    }*/
+    }
+    */
   } else {
     // unknown feature space
   }
