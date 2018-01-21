@@ -88,6 +88,8 @@ int main(int argc, char *argv[]) {
   vector<vector<uint>> fs(c, vector<uint>(d, 0));
   vector<uint64_t> h(k, 0);
   float density_constant = streamhash_compute_constant(DENSITY, k);
+  vector<vector<float>> mean_bincount(c, vector<float>(d));
+  float npoints = 0.0; // number of points
 
 #ifdef VERBOSE
   string s("test");
@@ -126,7 +128,7 @@ int main(int argc, char *argv[]) {
 
     // construct auxiliary data structures
     vector<vector<float>> bincounts(nrows, vector<float>(d));
-    vector<float> lociscores(nrows);
+    vector<vector<float>> lociscores(nrows, vector<float>(d));
     vector<float> anomalyscores(nrows);
 
     // construct feature names
@@ -163,13 +165,11 @@ int main(int argc, char *argv[]) {
     cerr << "streaming in " << nrows << " tuples... ";
     start = chrono::steady_clock::now();
     for (uint row_idx = 0; row_idx < nrows; row_idx++) {
-      vector<float> bincount;
-      float lociscore, anomalyscore;
-      tie(bincount, lociscore, anomalyscore) = chains_add(X[row_idx], feature_names, h, DENSITY,
-                                                          density_constant, deltamax, shift,
-                                                          cmsketches, fs, true);
-      //lociscores[row_idx] = l;
-      //anomalyscores[row_idx] = s;
+      vector<float> bincount, lociscore;
+      float anomalyscore;
+      tie(bincount, lociscore, anomalyscore, npoints) =
+        chains_add(X[row_idx], feature_names, h, DENSITY, density_constant, deltamax, shift,
+                   cmsketches, fs, mean_bincount, npoints, true);
     }
     end = chrono::steady_clock::now();
     diff = chrono::duration_cast<chrono::milliseconds>(end - start);
@@ -179,14 +179,14 @@ int main(int argc, char *argv[]) {
     cerr << "scoring " << nrows << " tuples... ";
     start = chrono::steady_clock::now();
     for (uint row_idx = 0; row_idx < nrows; row_idx++) {
-      vector<float> bincount;
-      float lociscore, anomalyscore;
-      tie(bincount, lociscore, anomalyscore) = chains_add(X[row_idx], feature_names, h, DENSITY,
-                                                          density_constant, deltamax, shift,
-                                                          cmsketches, fs, false);
+      vector<float> bincount, lociscore;
+      float anomalyscore;
+      tie(bincount, lociscore, anomalyscore, npoints) =
+        chains_add(X[row_idx], feature_names, h, DENSITY, density_constant, deltamax, shift,
+                   cmsketches, fs, mean_bincount, npoints, false);
       bincounts[row_idx] = bincount;
-      //lociscores[row_idx] = l;
-      //anomalyscores[row_idx] = s;
+      lociscores[row_idx] = lociscore;
+      anomalyscores[row_idx] = anomalyscore;
     }
     end = chrono::steady_clock::now();
     diff = chrono::duration_cast<chrono::milliseconds>(end - start);
@@ -215,6 +215,37 @@ int main(int argc, char *argv[]) {
       cout << endl;
     }
     */
+
+    // debug: verify mean bincounts
+    /*for (uint i = 0; i < d; i++) {
+      float m = 0.0;
+      for (uint j = 0; j < nrows; j++) {
+        m += bincounts[j][i];
+      }
+      m /= nrows;
+      float t = 0.0;
+      for (uint j = 0; j < c; j++) {
+        t += mean_bincount[j][i];
+      }
+      t /= c;
+      cout << m << " " << t/npoints << endl;
+    }*/
+
+    // debug: print lociscores at each depth
+    /*for (uint row_idx = 0; row_idx < nrows; row_idx++) {
+      for (auto b : lociscores[row_idx]) {
+        cout << setprecision(12) << b << " ";
+      }
+      cout << endl;
+    }*/
+
+    // debug: print anomalyscores
+    /*for (uint row_idx = 0; row_idx < nrows; row_idx++) {
+      cout << setprecision(12) << anomalyscores[row_idx] << " ";
+    }
+    cout << endl;
+    */
+
   } else {
     // unknown feature space
   }

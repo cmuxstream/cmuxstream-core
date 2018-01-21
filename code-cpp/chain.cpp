@@ -24,20 +24,24 @@ namespace std {
     }
   }
 
-  tuple<vector<float>,float,float>
+  tuple<vector<float>,vector<float>,float,float>
   chains_add(vector<float>& x, vector<string>& feature_names,
              vector<uint64_t>& h, float density, float constant,
              vector<vector<float>>& deltamax, vector<vector<float>>& shift,
              vector<vector<unordered_map<vector<int>,int>>>& cmsketches,
-             vector<vector<uint>>& fs, bool update) {
+             vector<vector<uint>>& fs, vector<vector<float>>& mean_bincount,
+             float npoints, bool update) {
 
     uint k = h.size();
     uint nchains = cmsketches.size();
     uint depth = cmsketches[0].size();
 
-    vector<float> bincount(depth);
-    float lociscore;
-    float anomalyscore;
+    vector<vector<float>> bincount(nchains, vector<float>(depth));
+    vector<vector<float>> lociscore(nchains, vector<float>(depth));
+    vector<float> anomalyscore(nchains, numeric_limits<float>::max());
+    vector<float> avg_bincount(depth);
+    vector<float> avg_lociscore(depth);
+    float avg_anomalyscore = 0.0;
 
     vector<float> xp = streamhash_project(x, feature_names, h, density,
                                           constant);
@@ -58,19 +62,36 @@ namespace std {
         for (uint i = 0; i < k; i++) {
           bin[i] = static_cast<int>(floor(prebin[i]));
         }
+
+        int N = npoints;
         if (update) {
+          mean_bincount[c][d] += 1.0 + 2.0 * cmsketches[c][d][bin];
           cmsketches[c][d][bin]++;
+          N = npoints + 1;
         }
 
-        bincount[d] += cmsketches[c][d][bin];
+        bincount[c][d] = cmsketches[c][d][bin];
+        lociscore[c][d] = (bincount[c][d] - (1.0/N) * mean_bincount[c][d])
+                            * pow(2.0, d+1);
+
+        avg_bincount[d] += bincount[c][d];
+        avg_lociscore[d] += lociscore[c][d];
+        if (lociscore[c][d] < anomalyscore[c]) {
+          anomalyscore[c] = lociscore[c][d];
+        }
       }
+      avg_anomalyscore += anomalyscore[c];
     }
 
+    if (update) { npoints += 1; }
+
+    avg_anomalyscore /= nchains;
     for (uint d = 0; d < depth; d++) {
-      bincount[d] /= nchains;
+      avg_bincount[d] /= nchains;
+      avg_lociscore[d] /= nchains;
     }
 
-    return make_tuple(bincount, lociscore, anomalyscore);
+    return make_tuple(avg_bincount, avg_lociscore, avg_anomalyscore, npoints);
   }
 
 }
