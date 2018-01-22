@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
     }
 
     // stream in tuples
-    cerr << "streaming in " << nrows << " tuples... ";
+    cerr << "streaming in " << nrows << " tuples... " << endl;
     start = chrono::steady_clock::now();
     for (uint row_idx = 0; row_idx < nrows; row_idx++) {
       //vector<float> bincount, lociscore;
@@ -179,7 +179,8 @@ int main(int argc, char *argv[]) {
                    cmsketches, fs, mean_bincount, npoints, true);
 
       if ((row_idx > 0) && (row_idx % scoring_batch_size == 0)) {
-        cout << row_idx + 1 << "\t";
+        cerr << "\tscoring at tuple: " << row_idx << endl;
+        cout << row_idx << "\t";
         for (uint row_idx2 = 0; row_idx2 <= row_idx; row_idx2++) {
           float anomalyscore;
           tie(anomalyscore, npoints) =

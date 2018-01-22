@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall -g --std=c++11
+CFLAGS=-Wall --std=c++11
 SOURCES := $(wildcard *.cpp)
 OBJS := $(SOURCES:.cpp=.o)
 
@@ -8,8 +8,11 @@ OBJS := $(SOURCES:.cpp=.o)
 optimized: CFLAGS += -Ofast -march=native -mtune=native
 optimized: xstream 
 
-debug: CFLAGS += -DDEBUG -g
+debug: CFLAGS += -DDEBUG -fsanitize=address -fsanitize=undefined -g
 debug: xstream
+
+profile: CFLAGS += -L/home/localdirs/stufs1/emanzoor/.local/lib -Wl,--no-as-needed,-lprofiler,--as-needed -g
+profile: xstream
 
 xstream: $(OBJS)
 		$(CC) $(CFLAGS) $^ -o $@
