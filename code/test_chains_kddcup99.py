@@ -14,13 +14,13 @@ if __name__ == "__main__":
     print "Reading data..."
     data = np.loadtxt("../data/http_smtp_continuous.csv.gz",
                       delimiter=",")
-    X = data[:,:33]
-    y = data[:,34].astype(int)
+    X = data[:,:-1]
+    y = data[:,-1].astype(int)
 
     print "Chains...",
-    k = 50
-    nchains = 48
-    depth = 5
+    k = 100
+    nchains = 100
+    depth = 10
     print k, nchains, depth
 
     cf = Chains(k=k, nchains=nchains, depth=depth, projections='streamhash')
@@ -29,7 +29,8 @@ if __name__ == "__main__":
     initial_sample_size = 181877 #int(1.0/100 * nelements)
     cf.fit(X[:initial_sample_size,:])
 
-    with open("kdd99_scores.txt", "w") as f:
+    with open("kdd99_scores_k" + str(k) + "_C" + str(nchains) +
+              "_d" + str(depth) + ".txt", "w") as f:
         for idx in tqdm(range(initial_sample_size, X.shape[0]), desc="Streaming..."):
             x = X[idx,:]
             cf.update(x.reshape(1,-1), action="add")

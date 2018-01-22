@@ -1,3 +1,5 @@
+xstream
+*.o
 tex/
 *.png
 *.swp
