@@ -657,6 +657,26 @@ Thus, for a point $j$ having a set of neighboring bins $\mathcal{N}(j)$, the adj
 
 \pagebreak
 
+\subsection{Incremental maintenance of the LOCI score}
+
+The LOCI score for chain $i$, point $j$ and depth $d$ was defined as:
+\begin{eqnarray}
+	L_{id}(\bar{Y}_j) &=& H_{id}(\bar{Y}_j)\times 2^d - \frac{1}{N}\sum_{k}H_{id}(\bar{Y}_k)\times 2^d
+\end{eqnarray}
+where $H_{id}(\bar{Y}_j)$ is the bin-count and is directly available on the arrival of every new point. Hence, the first term of the above equation is easily computable.
+
+Let $b_{id}(c)$ be the bin-count of a bin $c$ in chain $i$ at depth $d$. Then the total bin-count $S_{id}$ (the sum of the bin-counts of all points in chain $i$ at depth $d$) is given by:
+\begin{eqnarray}
+	S_{id} = \sum_{k}H_{id}(\bar{Y}_k) = \sum_{c \in \textrm{bins in chain}(i,d)} b_{id}(c)^2
+\end{eqnarray}
+When a new point arrives, it falls into some cell $c'$, and its bin-count is incremented to $b_{id}(c') + 1$. This results in the following change to the total bin-count:
+\begin{eqnarray}
+	S'_{id} &=& \sum_{c \neq c'} b_{id}(c)^2 + (b_{id}(c') + 1)^2\\
+					&=& \sum_{c} b_{id}(c)^2 + 2b_{id}(c') + 1\\
+					&=& S_{id} + 2b_{id}(c') + 1
+\end{eqnarray}
+where $b_{id}(c)$ was the bin-count before the point was added, and is easily computable. This equation, along with tracking the number of points $N$, can thus be used to incrementally maintain the second term of the LOCI score.
+
 \subsection{Dynamic chains with windows}
 
 \pagebreak
