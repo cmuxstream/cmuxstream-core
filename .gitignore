@@ -6,7 +6,6 @@ tex/
 .DS_Store
 data/
 env*
-*.pdf
 *.synctex.gz
 
 # Byte-compiled / optimized / DLL files
