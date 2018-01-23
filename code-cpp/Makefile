@@ -5,7 +5,7 @@ OBJS := $(SOURCES:.cpp=.o)
 
 .PHONY: clean
 
-optimized: CFLAGS += -Ofast -march=native -mtune=native
+optimized: CFLAGS += -Ofast -march=native -mtune=native -lpthread -pthread
 optimized: xstream 
 
 debug: CFLAGS += -DDEBUG -fsanitize=address -fsanitize=undefined -g

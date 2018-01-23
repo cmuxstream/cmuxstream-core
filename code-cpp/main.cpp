@@ -11,6 +11,7 @@
 #include <random>
 #include "streamhash.h"
 #include <string>
+#include <thread>
 #include <tuple>
 #include <unordered_map>
 #include "util.h"
@@ -44,6 +45,13 @@ R"(xstream.
       --initsample=<initial sample size>   Initial sample size [default: -1].
       --scoringbatch=<scoring batch size>  Scoring batch size [default: 1000].
 )";
+
+void print_scores(uint row_idx, vector<vector<float>>& X, vector<string>& feature_names,
+                  vector<uint64_t>& h, float density, float density_constant,
+                  vector<vector<float>>& deltamax, vector<vector<float>>& shift,
+                  vector<vector<unordered_map<vector<int>,int>>> cmsketches, // copy
+                  vector<vector<uint>>& fs, vector<vector<float>> mean_bincount, // copy
+                  float npoints);
 
 int main(int argc, char *argv[]) {
   // utility elements
@@ -168,6 +176,7 @@ int main(int argc, char *argv[]) {
     }
 
     // stream in tuples
+    vector<thread> scoring_threads;
     cerr << "streaming in " << nrows << " tuples... " << endl;
     start = chrono::steady_clock::now();
     for (uint row_idx = 0; row_idx < nrows; row_idx++) {
@@ -179,21 +188,25 @@ int main(int argc, char *argv[]) {
                    cmsketches, fs, mean_bincount, npoints, true);
 
       if ((row_idx > 0) && (row_idx % scoring_batch_size == 0)) {
-        cerr << "\tscoring at tuple: " << row_idx << endl;
-        cout << row_idx << "\t";
-        for (uint row_idx2 = 0; row_idx2 <= row_idx; row_idx2++) {
-          float anomalyscore;
-          tie(anomalyscore, npoints) =
-            chains_add(X[row_idx2], feature_names, h, DENSITY, density_constant, deltamax, shift,
-                       cmsketches, fs, mean_bincount, npoints, false);
-          cout << setprecision(12) << anomalyscore << " ";
+        if (scoring_threads.size() > 0) {
+          scoring_threads[scoring_threads.size()-1].join();
         }
-        cout << endl;
+        thread t(print_scores, row_idx, ref(X), ref(feature_names),
+                     ref(h), DENSITY, density_constant,
+                     ref(deltamax), ref(shift),
+                     cmsketches, // copy
+                     ref(fs), mean_bincount, // copy
+                     npoints);
+        scoring_threads.push_back(move(t));
       }
     }
     end = chrono::steady_clock::now();
     diff = chrono::duration_cast<chrono::milliseconds>(end - start);
     cerr << "done in " << diff.count() << "ms" << endl;
+
+    cerr << "Waiting for lagging scoring threads... ";
+    scoring_threads[scoring_threads.size()-1].join();
+    cerr << "done." << endl;
 
     // score tuples at the end
     cerr << "scoring " << nrows << " tuples... ";
@@ -276,4 +289,22 @@ int main(int argc, char *argv[]) {
   }
 
   return 0;
+}
+
+void print_scores(uint row_idx, vector<vector<float>>& X, vector<string>& feature_names,
+                  vector<uint64_t>& h, float density, float density_constant,
+                  vector<vector<float>>& deltamax, vector<vector<float>>& shift,
+                  vector<vector<unordered_map<vector<int>,int>>> cmsketches, // copy
+                  vector<vector<uint>>& fs, vector<vector<float>> mean_bincount, // copy
+                  float npoints) {
+  cerr << "\tscoring at tuple: " << row_idx << endl;
+  cout << row_idx << "\t";
+  for (uint row_idx2 = 0; row_idx2 <= row_idx; row_idx2++) {
+    float anomalyscore;
+    tie(anomalyscore, npoints) =
+      chains_add(X[row_idx2], feature_names, h, density, density_constant, deltamax, shift,
+                 cmsketches, fs, mean_bincount, npoints, false);
+    cout << setprecision(12) << anomalyscore << " ";
+  }
+  cout << endl;
 }
