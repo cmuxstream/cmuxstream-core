@@ -770,7 +770,7 @@ where $b_{id}(c)$ was the bin-count before the point was added, and is easily co
 	\item There may be some sensitivity to the depth $d$ for XS-C. This reduces as $C$ is increased.
 	\item Baseline method implementations have been verified to give the right ROC-AUC numbers on the datasets they originally reported on.
 	\item High ROC-AUC as reported by baseline methods is not correlated with high AP (see \url{http://www.dbs.ifi.lmu.de/research/outlier-evaluation/DAMI/literature/KDDCup99/} for an example on the network-intrusion dataset). In fact, AP is a more sensitive (and better) metric than ROC-AUC.
-	\item RSH performs poorly on network-intrusion due to clustered anomalies. On shuffling the dataset, the accuracy improves~\ref{fig:rsh_shuffle}.
+	\item RSH performs poorly on network-intrusion due to clustered anomalies. On shuffling the dataset, the AP improves(see Fig:~\ref{fig:rsh_shuffle})
 \end{enumerate}
 
 \textbf{PR-AUC (AP) vs. ROC-AUC.} PR curves do not care about ``true negatives'', which do not show up in the formulae for precision or recall. Hence, there is no advantage in labelling non-anomalies correctly: this is desired, since having a large number of non-anomalies (as is usually the case) reduces the loss in AUC due to incorrectly labelling anomalies. In fact, a curve that dominates in PR-space will also dominate in ROC-space, but the converse is not true \parencite{davis2006relationship}.
