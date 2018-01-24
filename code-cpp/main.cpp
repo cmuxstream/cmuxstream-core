@@ -205,7 +205,8 @@ int main(int argc, char *argv[]) {
     cerr << "done in " << diff.count() << "ms" << endl;
 
     cerr << "Waiting for lagging scoring threads... ";
-    scoring_threads[scoring_threads.size()-1].join();
+    if (scoring_threads.size() > 0)
+      scoring_threads[scoring_threads.size()-1].join();
     cerr << "done." << endl;
 
     // score tuples at the end
