@@ -701,17 +701,32 @@ where $b_{id}(c)$ was the bin-count before the point was added, and is easily co
 	\label{table:datasets-streaming}
 \end{table}
 
+\textbf{Baselines}
+
+\begin{table}
+\centering
+    \begin{tabular}{l|l|c}
+    \toprule
+    Methods  & Window / Continuous & Parameters                                           \\	\hline
+    HS-Trees & Window              & Max Depth=15, Num Trees=100, Window Size = 256       \\
+    RS-Hash  & Continuous          & Decay Rate =  0.015, Initial Sample Size = 25\% \\
+    LODA     & Window              & Two-Window Histogram, WindowSize = 256               \\
+    \bottomrule
+    \end{tabular}
+    \caption{Baseline Methods and the parameters chosen based on best performance}
+\end{table}
+
 \begin{figure*}[ht!]
     \centering
     \begin{subfigure}[t]{0.24\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{fig/http_ap_over_time.pdf}
+        \includegraphics[width=\linewidth]{fig/HttpSmtpContinuous_ap_over_time.pdf}
         \caption{network-intrusion}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.24\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{fig/sms_ap_over_time.pdf}
+        \includegraphics[width=\linewidth]{fig/SpamSMS_ap_over_time.pdf}
         \caption{spam-sms}
     \end{subfigure}
 		\hfill
@@ -749,15 +764,24 @@ where $b_{id}(c)$ was the bin-count before the point was added, and is easily co
 		\caption{(a)-(e) Average precision over time for XS-C, XS-W and baseline methods for 5 datasets. (f)-(h) Effect of varying $d$ and initial sample size $N$ on XS-C.}
 \end{figure*}
 
+
 \textbf{Observations.}
 \begin{enumerate}
 	\item There may be some sensitivity to the depth $d$ for XS-C. This reduces as $C$ is increased.
 	\item Baseline method implementations have been verified to give the right ROC-AUC numbers on the datasets they originally reported on.
 	\item High ROC-AUC as reported by baseline methods is not correlated with high AP (see \url{http://www.dbs.ifi.lmu.de/research/outlier-evaluation/DAMI/literature/KDDCup99/} for an example on the network-intrusion dataset). In fact, AP is a more sensitive (and better) metric than ROC-AUC.
-	\item RSH performs poorly on network-intrusion due to clustered anomalies.
+	\item RSH performs poorly on network-intrusion due to clustered anomalies. On shuffling the dataset, the accuracy improves~\ref{fig:rsh_shuffle}.
 \end{enumerate}
 
 \textbf{PR-AUC (AP) vs. ROC-AUC.} PR curves do not care about ``true negatives'', which do not show up in the formulae for precision or recall. Hence, there is no advantage in labelling non-anomalies correctly: this is desired, since having a large number of non-anomalies (as is usually the case) reduces the loss in AUC due to incorrectly labelling anomalies. In fact, a curve that dominates in PR-space will also dominate in ROC-space, but the converse is not true \parencite{davis2006relationship}.
+
+\begin{figure}
+\centering
+	\includegraphics[scale=0.6]{fig/shuffled_ap_over_time.pdf}
+	\caption{RS-Hash performance improves on shuffled version of HTTP dataset.}
+	\label{fig:rsh_shuffle}
+\end{figure}
+
 
 \input{static}
 
