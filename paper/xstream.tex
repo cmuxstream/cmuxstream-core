@@ -718,50 +718,44 @@ where $b_{id}(c)$ was the bin-count before the point was added, and is easily co
 
 \begin{figure*}[ht!]
     \centering
-    \begin{subfigure}[t]{0.24\textwidth}
+    \begin{subfigure}[t]{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{fig/HttpSmtpContinuous_ap_over_time.pdf}
         \caption{network-intrusion}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[t]{0.24\textwidth}
+    \begin{subfigure}[t]{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{fig/SpamSMS_ap_over_time.pdf}
         \caption{spam-sms}
-    \end{subfigure}
-		\hfill
-    \begin{subfigure}[t]{0.24\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{fig/ap_over_time_placeholder.pdf}
-        \caption{spam-url}
-    \end{subfigure}
-		\hfill
-    \begin{subfigure}[t]{0.24\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{fig/ap_over_time_placeholder.pdf}
-        \caption{streamspot-flash}
     \end{subfigure}\\
-    \begin{subfigure}[t]{0.24\textwidth}
+		\begin{subfigure}[t]{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{fig/ap_over_time_placeholder.pdf}
-        \caption{?}
+        \includegraphics[width=\linewidth]{fig/http_ap_over_time.pdf}
+        \caption{network-intrusion}
     \end{subfigure}
-		\begin{subfigure}[t]{0.24\textwidth}
+    \hfill
+    \begin{subfigure}[t]{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{fig/ap_over_time_placeholder.pdf}
-        \caption{?}
-    \end{subfigure}
-		\begin{subfigure}[t]{0.24\textwidth}
-				\centering
-				\includegraphics[width=\linewidth]{fig/xs_c_depths_init_samples_http.pdf}
-				\caption{network-intrusion}
-		\end{subfigure}
-		\begin{subfigure}[t]{0.24\textwidth}
-				\centering
-				\includegraphics[width=\linewidth]{fig/xs_c_depths_init_samples_sms.pdf}
-				\caption{spam-sms}
-		\end{subfigure}
-		\caption{(a)-(e) Average precision over time for XS-C, XS-W and baseline methods for 5 datasets. (f)-(h) Effect of varying $d$ and initial sample size $N$ on XS-C.}
+        \includegraphics[width=\linewidth]{fig/sms_ap_over_time.pdf}
+        \caption{spam-sms}
+    \end{subfigure}\\
+		\caption{Average precision over time for XS-C, XS-W and baseline methods for 5 datasets, with (a)-(b) score-once and (c)-(d) score-all.}
+\end{figure*}
+
+\begin{figure*}
+	\centering
+	\begin{subfigure}[t]{0.45\textwidth}
+			\centering
+			\includegraphics[width=\linewidth]{fig/xs_c_depths_init_samples_http.pdf}
+			\caption{network-intrusion}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.45\textwidth}
+			\centering
+			\includegraphics[width=\linewidth]{fig/xs_c_depths_init_samples_sms.pdf}
+			\caption{spam-sms}
+	\end{subfigure}
+	\caption{Effect of varying $d$ and initial sample size $N$ on XS-C (score-all).}
 \end{figure*}
 
 
