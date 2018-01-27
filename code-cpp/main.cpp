@@ -31,6 +31,7 @@ R"(xstream.
               [--nwindows=<number of windows>]
               [--initsample=<initial sample size>]
               [--scoringbatch=<scoring batch size>]
+              [--score-once]
 
       xstream (-h | --help)
 
@@ -44,6 +45,7 @@ R"(xstream.
       --nwindows=<number of windows>       Number of windows [default: 0].
       --initsample=<initial sample size>   Initial sample size [default: -1].
       --scoringbatch=<scoring batch size>  Scoring batch size [default: 1000].
+      --score-once                         Score each point only once.
 )";
 
 void print_scores(uint row_idx, vector<vector<float>>& X, vector<string>& feature_names,
@@ -51,6 +53,7 @@ void print_scores(uint row_idx, vector<vector<float>>& X, vector<string>& featur
                   vector<vector<float>>& deltamax, vector<vector<float>>& shift,
                   vector<vector<unordered_map<vector<int>,int>>> cmsketches, // copy
                   vector<vector<uint>>& fs, vector<vector<float>> mean_bincount, // copy
+                  vector<float>& anomalyscores, bool score_once,
                   float npoints);
 
 int main(int argc, char *argv[]) {
@@ -76,6 +79,7 @@ int main(int argc, char *argv[]) {
   uint c = args["--c"].asLong();
   uint d = args["--d"].asLong();
   bool fixed = args["--fixed"].asBool();
+  bool score_once = args["--score-once"].asBool();
 
   int nwindows = args["--nwindows"].asLong(); // no windows by default
   int init_sample_size = args["--initsample"].asLong(); // full data size by default
@@ -141,6 +145,7 @@ int main(int argc, char *argv[]) {
     // construct auxiliary data structures
     vector<vector<float>> bincounts(nrows, vector<float>(d));
     vector<vector<float>> lociscores(nrows, vector<float>(d));
+    vector<float> anomalyscores(nrows);
 
     // construct feature names
     vector<string> feature_names(ndims);
@@ -187,15 +192,17 @@ int main(int argc, char *argv[]) {
         chains_add(X[row_idx], feature_names, h, DENSITY, density_constant, deltamax, shift,
                    cmsketches, fs, mean_bincount, npoints, true);
 
+      anomalyscores[row_idx] = anomalyscore;
       if ((row_idx > 0) && (row_idx % scoring_batch_size == 0)) {
         if (scoring_threads.size() > 0) {
           scoring_threads[scoring_threads.size()-1].join();
         }
-        thread t(print_scores, row_idx, ref(X), ref(feature_names),
+        thread t(print_scores, row_idx+1, ref(X), ref(feature_names),
                      ref(h), DENSITY, density_constant,
                      ref(deltamax), ref(shift),
                      cmsketches, // copy
                      ref(fs), mean_bincount, // copy
+                     ref(anomalyscores), score_once,
                      npoints);
         scoring_threads.push_back(move(t));
       }
@@ -212,21 +219,13 @@ int main(int argc, char *argv[]) {
     // score tuples at the end
     cerr << "scoring " << nrows << " tuples... ";
     start = chrono::steady_clock::now();
-    //vector<float> anomalyscores(nrows);
-    cout << nrows << "\t";
-    for (uint row_idx = 0; row_idx < nrows; row_idx++) {
-      //vector<float> bincount, lociscore;
-      float anomalyscore;
-      //tie(bincount, lociscore, anomalyscore, npoints) =
-      tie(anomalyscore, npoints) =
-        chains_add(X[row_idx], feature_names, h, DENSITY, density_constant, deltamax, shift,
-                   cmsketches, fs, mean_bincount, npoints, false);
-      cout << setprecision(12) << anomalyscore << " ";
-      //bincounts[row_idx] = bincount;
-      //lociscores[row_idx] = lociscore;
-      //anomalyscores[row_idx] = anomalyscore;
-    }
-    cout << endl;
+    print_scores(nrows, ref(X), ref(feature_names),
+                 ref(h), DENSITY, density_constant,
+                 ref(deltamax), ref(shift),
+                 cmsketches, // copy
+                 ref(fs), mean_bincount, // copy
+                 ref(anomalyscores), score_once,
+                 npoints);
     end = chrono::steady_clock::now();
     diff = chrono::duration_cast<chrono::milliseconds>(end - start);
     cerr << "done in " << diff.count() << "ms" << endl;
@@ -297,14 +296,22 @@ void print_scores(uint row_idx, vector<vector<float>>& X, vector<string>& featur
                   vector<vector<float>>& deltamax, vector<vector<float>>& shift,
                   vector<vector<unordered_map<vector<int>,int>>> cmsketches, // copy
                   vector<vector<uint>>& fs, vector<vector<float>> mean_bincount, // copy
+                  vector<float>& anomalyscores, bool score_once,
                   float npoints) {
-  cerr << "\tscoring at tuple: " << row_idx << endl;
+  cerr << "\tscoring at tuple: " << row_idx;
+  if (score_once)
+    cerr << " (score once)";
+  cerr << endl;
   cout << row_idx << "\t";
-  for (uint row_idx2 = 0; row_idx2 <= row_idx; row_idx2++) {
+  for (uint row_idx2 = 0; row_idx2 < row_idx; row_idx2++) {
     float anomalyscore;
-    tie(anomalyscore, npoints) =
-      chains_add(X[row_idx2], feature_names, h, density, density_constant, deltamax, shift,
-                 cmsketches, fs, mean_bincount, npoints, false);
+    if (score_once) {
+      anomalyscore = anomalyscores[row_idx2];
+    } else {
+      tie(anomalyscore, npoints) =
+        chains_add(X[row_idx2], feature_names, h, density, density_constant, deltamax, shift,
+                   cmsketches, fs, mean_bincount, npoints, false);
+    }
     cout << setprecision(12) << anomalyscore << " ";
   }
   cout << endl;
