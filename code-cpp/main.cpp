@@ -51,10 +51,9 @@ R"(xstream.
 void print_scores(uint row_idx, vector<vector<float>>& X, vector<string>& feature_names,
                   vector<uint64_t>& h, float density, float density_constant,
                   vector<vector<float>>& deltamax, vector<vector<float>>& shift,
-                  vector<vector<unordered_map<vector<int>,int>>> cmsketches, // copy
-                  vector<vector<uint>>& fs, vector<vector<float>> mean_bincount, // copy
-                  vector<float>& anomalyscores, bool score_once,
-                  float npoints);
+                  vector<vector<unordered_map<vector<int>,int>>>& cmsketches, // copy
+                  vector<vector<uint>>& fs,
+                  vector<float>& anomalyscores, bool score_once);
 
 int main(int argc, char *argv[]) {
   // utility elements
@@ -104,8 +103,6 @@ int main(int argc, char *argv[]) {
   vector<vector<uint>> fs(c, vector<uint>(d, 0));
   vector<uint64_t> h(k, 0);
   float density_constant = streamhash_compute_constant(DENSITY, k);
-  vector<vector<float>> mean_bincount(c, vector<float>(d));
-  float npoints = 0.0; // number of points
 
 #ifdef VERBOSE
   string s("test");
@@ -181,51 +178,44 @@ int main(int argc, char *argv[]) {
     }
 
     // stream in tuples
-    vector<thread> scoring_threads;
+    //vector<thread> scoring_threads;
     cerr << "streaming in " << nrows << " tuples... " << endl;
     start = chrono::steady_clock::now();
     for (uint row_idx = 0; row_idx < nrows; row_idx++) {
-      //vector<float> bincount, lociscore;
-      float anomalyscore;
-      //tie(bincount, lociscore, anomalyscore, npoints) =
-      tie(anomalyscore, npoints) =
-        chains_add(X[row_idx], feature_names, h, DENSITY, density_constant, deltamax, shift,
-                   cmsketches, fs, mean_bincount, npoints, true);
-
+      float anomalyscore = chains_add(X[row_idx], feature_names, h, DENSITY, density_constant,
+                                      deltamax, shift, cmsketches, fs, true);
       anomalyscores[row_idx] = anomalyscore;
       if ((row_idx > 0) && (row_idx % scoring_batch_size == 0)) {
-        if (scoring_threads.size() > 0) {
-          scoring_threads[scoring_threads.size()-1].join();
-        }
-        thread t(print_scores, row_idx+1, ref(X), ref(feature_names),
+        //if (scoring_threads.size() > 0) {
+        //  scoring_threads[scoring_threads.size()-1].join();
+        //}
+        print_scores(row_idx+1, ref(X), ref(feature_names),
                      ref(h), DENSITY, density_constant,
                      ref(deltamax), ref(shift),
                      cmsketches, // copy
-                     ref(fs), mean_bincount, // copy
-                     ref(anomalyscores), score_once,
-                     npoints);
-        scoring_threads.push_back(move(t));
+                     ref(fs),
+                     ref(anomalyscores), score_once);
+        //scoring_threads.push_back(move(t));
       }
     }
     end = chrono::steady_clock::now();
     diff = chrono::duration_cast<chrono::milliseconds>(end - start);
     cerr << "done in " << diff.count() << "ms" << endl;
 
-    cerr << "Waiting for lagging scoring threads... ";
-    if (scoring_threads.size() > 0)
-      scoring_threads[scoring_threads.size()-1].join();
-    cerr << "done." << endl;
+    //cerr << "Waiting for lagging scoring threads... ";
+    //if (scoring_threads.size() > 0)
+    //  scoring_threads[scoring_threads.size()-1].join();
+    //cerr << "done." << endl;
 
     // score tuples at the end
-    cerr << "scoring " << nrows << " tuples... ";
+    cerr << "final scoring: ";
     start = chrono::steady_clock::now();
     print_scores(nrows, ref(X), ref(feature_names),
                  ref(h), DENSITY, density_constant,
                  ref(deltamax), ref(shift),
                  cmsketches, // copy
-                 ref(fs), mean_bincount, // copy
-                 ref(anomalyscores), score_once,
-                 npoints);
+                 ref(fs),
+                 ref(anomalyscores), score_once);
     end = chrono::steady_clock::now();
     diff = chrono::duration_cast<chrono::milliseconds>(end - start);
     cerr << "done in " << diff.count() << "ms" << endl;
@@ -294,10 +284,9 @@ int main(int argc, char *argv[]) {
 void print_scores(uint row_idx, vector<vector<float>>& X, vector<string>& feature_names,
                   vector<uint64_t>& h, float density, float density_constant,
                   vector<vector<float>>& deltamax, vector<vector<float>>& shift,
-                  vector<vector<unordered_map<vector<int>,int>>> cmsketches, // copy
-                  vector<vector<uint>>& fs, vector<vector<float>> mean_bincount, // copy
-                  vector<float>& anomalyscores, bool score_once,
-                  float npoints) {
+                  vector<vector<unordered_map<vector<int>,int>>>& cmsketches, // copy
+                  vector<vector<uint>>& fs,
+                  vector<float>& anomalyscores, bool score_once) {
   cerr << "\tscoring at tuple: " << row_idx;
   if (score_once)
     cerr << " (score once)";
@@ -305,14 +294,22 @@ void print_scores(uint row_idx, vector<vector<float>>& X, vector<string>& featur
   cout << row_idx << "\t";
   for (uint row_idx2 = 0; row_idx2 < row_idx; row_idx2++) {
     float anomalyscore;
+    //uint depth = cmsketches[0].size();
+    //vector<float> avg_bincount(depth), avg_lociscore(depth);
     if (score_once) {
       anomalyscore = anomalyscores[row_idx2];
     } else {
-      tie(anomalyscore, npoints) =
-        chains_add(X[row_idx2], feature_names, h, density, density_constant, deltamax, shift,
-                   cmsketches, fs, mean_bincount, npoints, false);
+      //tie(avg_bincount, avg_lociscore, anomalyscore, npoints) =
+      anomalyscore = chains_add(X[row_idx2], feature_names, h, density, density_constant,
+                                deltamax, shift, cmsketches, fs, false);
     }
     cout << setprecision(12) << anomalyscore << " ";
+    /*for (uint d = 0; d < depth-1; d++)
+      cout << setprecision(12) << avg_bincount[d] << " ";
+    cout << setprecision(12) << avg_bincount[depth-1] << "\t";
+    for (uint d = 0; d < depth-1; d++)
+      cout << setprecision(12) << avg_lociscore[d] << " ";
+    cout << setprecision(12) << avg_lociscore[depth-1] << endl;*/
   }
   cout << endl;
 }

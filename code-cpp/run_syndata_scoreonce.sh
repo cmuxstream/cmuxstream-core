@@ -3,7 +3,7 @@ make optimized
 K=100
 C=100
 D=15
-N=5000 # scoring interval
+N=1000 # scoring interval
 I=3082
 ./xstream --input ../data/synDataNoisy.tsv\
   --k $K --c $C --d $D\
@@ -11,7 +11,8 @@ I=3082
   --nwindows 0\
   --initsample $I\
   --scoringbatch $N\
-  > ../results/scores_syndata_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt
+  --scoreonce\
+  > ../results/scores_syndata_scoreonce_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt
 
 python ap_over_time.py ../data/synDataNoisy.tsv\
   ../results/scores_syndata_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt

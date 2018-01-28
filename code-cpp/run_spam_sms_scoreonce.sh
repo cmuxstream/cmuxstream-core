@@ -13,8 +13,9 @@ I=1394 # 25%
   --nwindows 0\
   --initsample $I\
   --scoringbatch $N\
-  > ../results/scores_spam_sms_counts_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt
+  --score-once\
+  > ../results/scores_spam_sms_counts_scoreonce_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt
 
 python ap_over_time.py ../data/spam-sms-preprocessed-counts.tsv\
-  ../results/scores_spam_sms_counts_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt\
-  > ../results/ap_spam_sms_counts_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt
+  ../results/scores_spam_sms_counts_scoreonce_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt\
+  > ../results/ap_spam_sms_counts_scoreonce_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt

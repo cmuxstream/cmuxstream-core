@@ -11,8 +11,9 @@ I=180173 # 25%
   --nwindows 0\
   --initsample $I\
   --scoringbatch $N\
-  > ../results/scores_http_smtp_continuous_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt
+  --score-once\
+  > ../results/scores_http_smtp_continuous_scoreonce_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt
 
 python ap_over_time.py ../data/http_smtp_continuous.csv\
-  ../results/scores_http_smtp_continuous_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt\
-  > ../results/ap_http_smtp_continuous_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt
+  ../results/scores_http_smtp_continuous_scoreonce_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt\
+  > ../results/ap_http_smtp_continuous_scoreonce_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt
