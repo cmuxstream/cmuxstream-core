@@ -109,7 +109,7 @@ def run_for_dataset(in_file, out_file, num_runs):
     fw=open(out_file,'w')
     out_file2=out_file+"_Scores.pkl"
     print "Doing for:"+str(in_file)
-    X, labels = read_dataset2(os.path.join(in_dir,in_file))
+    X, labels = read_dataset2(in_file)
     auc_arr = []
     ap_arr = []
     score_arr = []
@@ -129,8 +129,23 @@ def run_for_dataset(in_file, out_file, num_runs):
 in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets"
 out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/temp"
 
-in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim"
-out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/LowDim_Option1/LODA"
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Overall_Dim"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results_Static/Overall/LODA"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/LODA"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Noisy_DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/LowDim_Noise/LODA"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim2"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results_Static/LowDim/LODA"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/New_DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/Original/LODA"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Noisy_DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/LowDim_Noise/LODA"
 
 print "Running LODA"
 file_name = sys.argv[1]

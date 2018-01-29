@@ -36,7 +36,7 @@ def compute_statistics(scores, labels):
     return auc, avg_precision
     
 def run_IForest(X, labels):
-    clf = IsolationForest(n_estimators = 50)
+    clf = IsolationForest(n_estimators = 100)
     clf.fit(X, labels)
     scores = clf.decision_function(X)
     auc, ap = compute_statistics(-scores, labels)
@@ -113,7 +113,7 @@ def run_for_dataset(in_file, out_file, num_runs):
     fw=open(out_file,'w')
     out_file2=out_file+"_Scores.pkl"
     print "Doing for:"+str(in_file)
-    X, labels = read_dataset2(os.path.join(in_dir,in_file))
+    X, labels = read_dataset2(in_file)
     auc_arr = []
     ap_arr = []
     score_arr = []
@@ -151,11 +151,20 @@ out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Results/Res
 #in_file = os.path.join(in_dir,file_name)
 #out_file = os.path.join(out_dir, file_name)
 #run_for_dataset(in_file, out_file, num_runs)
-in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim"
-out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/LowDim_Option1/iForest"
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim/"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/LowDim_Option2/iForest2"
 
-#in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Original"
-#out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/iForest/Orig"
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Overall_Dim"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results_Static/Overall/iForest"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Noisy_DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/LowDim_Noise/iForest"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim2"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results_Static/LowDim/iForest"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Noisy_DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/LowDim_Noise/iForest"
 
 file_name = sys.argv[1]
 num_runs = int(sys.argv[2])

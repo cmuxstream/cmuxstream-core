@@ -36,7 +36,7 @@ def compute_statistics(scores, labels):
     return auc, avg_precision
     
 def run_HSTrees(X, labels):
-    clf = HSTrees(n_estimators=50, max_samples="auto", max_depth=15)
+    clf = HSTrees(n_estimators=100, max_samples="auto", max_depth=15)
     print "Classifier Initialized"
     clf.fit(X)
     print "Classifier Fit."
@@ -140,8 +140,20 @@ def run_for_dataset(in_file, out_file, num_runs):
 in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Consolidated_Irrel"
 out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Results/Results_Irrel/New_HSTrees"
 
-in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim/"
-out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/LowDim_Option1/HSTrees"
+#in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/HighDim/New2"
+#out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/HighDim_Option2/HSTrees"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/Original/HSTrees"
+
+#in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Noisy_DS"
+#out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/LowDim_Noise/HSTrees"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/New_DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/Original/HSTrees"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Noisy_DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/LowDim_Noise/HSTrees"
 
 print "Running HS-Trees"
 file_name = sys.argv[1]

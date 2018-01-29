@@ -37,8 +37,8 @@ class RSHash(object):
             self.scores.append(self.single_run())
     
     def single_run(self):
-        minimum = X.min(axis=0)
-        maximum = X.max(axis=0)
+        minimum = self.X.min(axis=0)
+        maximum = self.X.max(axis=0)
         
         hash_functions=[]
         for i in range(self.w):
@@ -60,7 +60,7 @@ class RSHash(object):
         
         # Select r dimensions from the dataset.
         V = np.random.choice(range(self.X.shape[1]),r,replace=False)
-        filtered_V = V[np.where(minimum!=maximum)]
+        filtered_V = V[np.where(minimum[V]!=maximum[V])]
         
         # Randomly sample dataset S of s points.
         selected_indexes = np.random.choice(range(self.X.shape[0]), self.s, replace=False)
@@ -100,7 +100,7 @@ class RSHash(object):
         score_Y = -1 * np.ones([self.X.shape[0], self.X.shape[1]])
             
         for j in range(score_Y.shape[1]):
-            if j in V:
+            if j in filtered_V:
                 score_Y[:,j] = np.floor((norm_X[:,j]+alpha[j])/float(f))
         
         score_arr=[]
@@ -197,7 +197,7 @@ def run_for_dataset(in_file, out_file, num_runs):
     fw=open(out_file,'w')
     out_file2=out_file+"_Scores.pkl"
     print "Doing for:"+str(in_file)
-    X, labels = read_dataset2(os.path.join(in_dir,in_file))
+    X, labels = read_dataset2(in_file)
     auc_arr = []
     ap_arr = []
     score_arr = []
@@ -218,8 +218,17 @@ def run_for_dataset(in_file, out_file, num_runs):
 in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Consolidated_Irrel"
 out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Results/Results_Irrel/New_RSHash"
 
-in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/LowDim"
-out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results/LowDim_Option1/RSHash"
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Overall_Dim"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/Results_Static/Overall/RSHash"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/Original/RSHash"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/New_DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/Original/RSHash"
+
+in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Noisy_DS"
+out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/LowDim_Noise/RSHash"
 
 print "Running RSHash"
 file_name = sys.argv[1]
