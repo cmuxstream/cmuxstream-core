@@ -73,7 +73,11 @@ class Stream_RS_Hash(object):
         self.r = np.empty([self.m,],dtype=int)
         self.V=[]
         for i in range(self.m):
-            self.r[i] = min(np.random.randint(low = low_value[i], high = high_value[i]), self.dim)
+	    if np.floor(low_value[i]) == np.floor(high_value[i]):
+		print low_value[i],high_value[i],i
+		self.r[i] = 1
+	    else:
+            	self.r[i] = min(np.random.randint(low = low_value[i], high = high_value[i]), self.dim)
             all_feats = np.array(range(self.pp_data.shape[1]))
             choice_feats = all_feats[np.where(self.minimum[all_feats]!=self.maximum[all_feats])]
             sel_V = np.random.choice(choice_feats, size = self.r[i], replace=False)
@@ -95,7 +99,7 @@ class Stream_RS_Hash(object):
     def score_update_instance(self,X_sample, index):
         X_normalized = (X_sample - self.minimum)/(self.maximum - self.minimum)
         X_normalized[np.abs(X_normalized) == np.inf] = 0
-        
+	X_normalized =  np.asarray(X_normalized).ravel()
         score_instance = 0
         for r in range(self.m):
             Y = -1 * np.ones(len(self.V[r]))
@@ -225,5 +229,3 @@ sampling_points=1000
 decay = 0.015
 data = run_RSHash(X, y, sampling_points, decay)
 np.savetxt(out_file, data, delimiter=",")
-    
-
