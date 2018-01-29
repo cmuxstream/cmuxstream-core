@@ -5,6 +5,6 @@ for ds_name in $dir/*
 do
         bs_name=$(basename "$ds_name")
         echo $bs_name
-        python iForest.py "$bs_name"  10
+        python RSHash.py "$bs_name"  10
 done
 

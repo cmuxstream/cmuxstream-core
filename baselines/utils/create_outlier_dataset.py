@@ -26,6 +26,10 @@ def noisy_signal(data, desired_SNR_dB):
 
     signal_power = np.mean(np.square(data), axis=0)
     noise_power = np.mean(np.square(noise), axis=0)
+    
+    print signal_power
+    print noise_power
+    print HEY
     # Scale factor
     scale_factor = (signal_power / noise_power) * (10 ** (- desired_SNR_dB / 10))
     # scale noise to have desired SNR when added to the data
