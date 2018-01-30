@@ -18,8 +18,8 @@ def daywise_convertsvmlight(folder, out_dir):
         start_time = time.time()
         print "Processing Day:"+str(i)
         f=open(os.path.join(folder,"Day"+str(i)+".svm"),"r")
-        out_file=os.path.join(out_dir,"Day"+str(i)+".ssv")
-        fw=open(out_file,'w')
+        out_file=os.path.join(out_dir,"Day"+str(i))
+        #fw=open(out_file,'w')
         column_list = []
         data_vals = []
         labels = []
@@ -38,34 +38,34 @@ def daywise_convertsvmlight(folder, out_dir):
             dict_values={}
             for i in range(1,len(split)):
                 split2 = split[i].split(":")
-                #cols.append(int(split2[0]))
-                #values.append(float(split2[1]))
-                dict_values[int(split2[0])] = float(split2[1])
+                cols.append(int(split2[0]))
+                values.append(float(split2[1]))
+                #dict_values[int(split2[0])] = float(split2[1])
                 
-            for i in range(3231961):
-                try:
-                    val = dict_values[i]
-                except KeyError,e:
-                    val = 0
+            #for i in range(3231961):
+            #    try:
+            #        val = dict_values[i]
+            #    except KeyError,e:
+            #       val = 0
                     
-                fw.write(str(val)+" ")
-            fw.write(str(label)+"\n") 
-            #column_list.append(cols)
-            #data_vals.append(values)
+            #   fw.write(str(val)+" ")
+            #fw.write(str(label)+"\n") 
+            column_list.append(cols)
+            data_vals.append(values)
             line=f.readline()
         f.close()
-        fw.close()
+        #fw.close()
         print "Time Taken="+str(time.time()-start_time)
-        #lengths = [len(row) for row in column_list]
-        #cols = np.concatenate(column_list)
-        #rows = np.repeat(np.arange(len(column_list)), lengths)
-        #data_vals = np.concatenate(data_vals)
-        #m = sparse.coo_matrix((data_vals, (rows, cols)))
-        #print m.shape
-        #sparse.save_npz(out_file+".npz", m)
-        #np.save(out_file+"_Labels.npy",np.array(labels))
-        #savemat(out_file+".mat",{'vect':m})
-        #savemat(out_file+"_Labels.mat",{'labels':np.array(labels)})
+        lengths = [len(row) for row in column_list]
+        cols = np.concatenate(column_list)
+        rows = np.repeat(np.arange(len(column_list)), lengths)
+        data_vals = np.concatenate(data_vals)
+        m = sparse.coo_matrix((data_vals, (rows, cols)))
+        print m.shape
+        sparse.save_npz(out_file+".npz", m)
+        np.save(out_file+"_Labels.npy",np.array(labels))
+        savemat(out_file+".mat",{'vect':m})
+        savemat(out_file+"_Labels.mat",{'labels':np.array(labels)})
         
                 
 def convert_svmlight_to_file(folder,out_file):
