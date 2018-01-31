@@ -225,31 +225,38 @@ in_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_H
 #in_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/smtp.csv"
 #out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SMTP/RSHash/256_RSHash_015.csv"
 
-in_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/http_smtp_continuous.csv"
-out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous/RSHash3/1Per_RSHash_015.csv"
+#in_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/http_smtp_continuous.csv"
+in_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/SpamSmsCounts.csv"
+out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/1Per_RSHash_015.csv"
 
 X,y = read_dataset2(in_file)
 
-out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous/RSHash3/256_RSHash_05.csv"
+out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/256_RSHash_0015.csv"
 sampling_points=256
-decay = 0.5
+decay = 0.015
 data = run_RSHash(X, y, sampling_points, decay)
 np.savetxt(out_file, data, delimiter=",")
 
-out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous/RSHash3/1000_RSHash_05.csv"
+out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/1000_RSHash_0015.csv"
 sampling_points=1000
-decay = 0.5
+decay = 0.015
 data = run_RSHash(X, y, sampling_points, decay)
 np.savetxt(out_file, data, delimiter=",")
 
-out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous/RSHash3/1Per_RSHash_05.csv"
-sampling_points=7206
-decay = 0.5
+out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/1Per_RSHash_0015.csv"
+sampling_points=55
+decay = 0.015
 data = run_RSHash(X, y, sampling_points, decay)
 np.savetxt(out_file, data, delimiter=",")
 
-out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous/RSHash3/10Per_RSHash_05.csv"
-sampling_points=72069
-decay = 0.5
+out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/10Per_RSHash_0015.csv"
+sampling_points=557
+decay = 0.015
+data = run_RSHash(X, y, sampling_points, decay)
+np.savetxt(out_file, data, delimiter=",")
+
+out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/25Per_RSHash_0015.csv"
+sampling_points=1393
+decay = 0.015
 data = run_RSHash(X, y, sampling_points, decay)
 np.savetxt(out_file, data, delimiter=",")

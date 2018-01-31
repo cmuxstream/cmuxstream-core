@@ -82,7 +82,7 @@ def Analyze_Stream_Dir(score_dir,method):
         if ((method == "HST") & ("AnormalyScore" in in_file) & (".csv" in in_file)):
             fname = in_file.replace(".csv","")
             print "Reading"+str(fname)
-            auc, ap = Analyze_Stream_Data(score_dir, fname,method)
+            auc, ap = Analyze_Stream_Data(score_dir, fname, method)
             fw.write(fname+"\t"+str(auc)+"\t"+str(ap)+"\n")
         elif(method!="HST"):
             if(".csv" in in_file):
@@ -113,7 +113,7 @@ def Analyze_Stream_Data(score_dir,fname,method):
     fw=open(os.path.join(score_dir,fname+"_Stats.txt"),"w")
     for idx in tqdm(range(anom_index,len(scores)), desc='Computing AP...'):
     #for idx in tqdm(range(1,len(scores)), desc='Computing AP...'):
-        if(idx%10000) == 0:
+        if(idx%100) == 0:
             s = scores[:idx+1]
             auc, ap = compute_statistics(s, labels[:idx+1])
             fw.write(str(idx)+"\t"+"{:.4f}".format(ap)+"\t"+"{:.4f}".format(auc)+"\t\n")
@@ -188,8 +188,12 @@ if __name__ == '__main__':
     #convert_from_HSTreeFile(in_file, out_file)
     #print STOP
     
-    score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous/HSTrees2/"
+    score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/HSTrees2/"
     Analyze_Stream_Dir(score_dir,"HST")
+    #score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/LODA2/"
+    #Analyze_Stream_Dir(score_dir,"LODA")
+    #score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/"
+    #Analyze_Stream_Dir(score_dir,"RSH")
     #score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous_Shuffled/RSHash/"
     #Analyze_Stream_Dir(score_dir,"RSH")
     #score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous_Shuffled/LODA/"

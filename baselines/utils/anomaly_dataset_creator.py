@@ -67,7 +67,20 @@ def daywise_convertsvmlight(folder, out_dir):
         savemat(out_file+".mat",{'vect':m})
         savemat(out_file+"_Labels.mat",{'labels':np.array(labels)})
         
-                
+
+def convert_svmlight_to_dense(folder,out_file):
+    for i in range(0,121):
+        start_time=time.time()
+        data_file = os.path.join(folder,"Day"+str(i)+".npz")
+        label_file = os.path.join(folder,"Day"+str(i)+"_Labels.npy")
+        X = sparse.load_npz(data_file)
+        X = sparse.csr_matrix(X)
+        y = np.load(label_file)
+        
+        X = full(X)
+        np.savetxt(os.path.join(out_dir,"Day"+str(i)+".txt"),X,fmt='%.1f')
+        print "Time taken="+str(time.time() - start_time)
+    
 def convert_svmlight_to_file(folder,out_file):
     fw=open(out_file,'w')
     column_list = []
@@ -190,7 +203,8 @@ def main():
     
     folder = "../../../Data/url_svmlight"
     out_dir = "../../../Data/mod_url_svmlight"
-    daywise_convertsvmlight(folder, out_dir)
+    #daywise_convertsvmlight(folder, out_dir)
+    convert_svmlight_to_dense("../../../Data/mod_url_svmlight","../../../Data/mod_url_svmlight2")
     
 if __name__ == '__main__':
     main()
