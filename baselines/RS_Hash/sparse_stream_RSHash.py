@@ -6,6 +6,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.preprocessing import MinMaxScaler, scale
 from scipy.io import loadmat
 import pickle
+from scipy import sparse
 import time
 from tqdm import tqdm
 
@@ -58,8 +59,8 @@ class Stream_RS_Hash(object):
         
     def _getMinMax(self):
         self.pp_data = self.X[:self.s,:]
-        self.minimum = np.min(self.pp_data, axis=0)
-        self.maximum = np.max(self.pp_data, axis=0)
+        self.minimum = np.min(self.pp_data, axis=0).toarray()[0]
+        self.maximum = np.max(self.pp_data, axis=0).toarray()[0]
         print "Min Shape="+str(self.minimum.shape)+" and max shape="+str(self.maximum.shape)        
         
     def _sample_dims(self):
@@ -67,12 +68,21 @@ class Stream_RS_Hash(object):
         common_term = np.log(self.effS)/np.log(max_term)
         low_value = 1 + 0.5 * common_term
         high_value = common_term
+        print "low_value="+str(low_value)
+        print "high value="+str(high_value)
         self.r = np.empty([self.m,],dtype=int)
         self.V=[]
         for i in range(self.m):
-            self.r[i] = min(np.random.randint(low = low_value[i], high = high_value[i]), self.dim)
-            sel_V = np.random.choice(range(self.pp_data.shape[1]),size = self.r[i], replace = False)
-            self.V.append(sel_V[np.where(self.minimum[sel_V]!=self.maximum[sel_V])])
+	    if np.floor(low_value[i]) == np.floor(high_value[i]):
+		print low_value[i],high_value[i],i
+		self.r[i] = 1
+	    else:
+            	self.r[i] = min(np.random.randint(low = low_value[i], high = high_value[i]), self.dim)
+            all_feats = np.array(range(self.pp_data.shape[1]))
+            choice_feats = all_feats[np.where(self.minimum[all_feats]!=self.maximum[all_feats])]
+            sel_V = np.random.choice(choice_feats, size = self.r[i], replace=False)
+            #sel_V = np.random.choice(range(self.pp_data.shape[1]),size = self.r[i], replace = False)
+            self.V.append(sel_V)          
         
     def _normalize(self):
         self.X_normalized = (self.pp_data - self.minimum)/(self.maximum - self.minimum)
@@ -89,7 +99,7 @@ class Stream_RS_Hash(object):
     def score_update_instance(self,X_sample, index):
         X_normalized = (X_sample - self.minimum)/(self.maximum - self.minimum)
         X_normalized[np.abs(X_normalized) == np.inf] = 0
-        
+	X_normalized =  np.asarray(X_normalized).ravel()
         score_instance = 0
         for r in range(self.m):
             Y = -1 * np.ones(len(self.V[r]))
@@ -200,63 +210,22 @@ def run_RSHash(X,y,sampling_points,decay):
     return data
     
         
-def read_dataset2(in_file):
-    data = np.loadtxt(in_file, delimiter=',')
-    n,m = data.shape
-    X = data[:,0:m-1]
-    y = data[:,m-1]
-    print n,m, X.shape, y.shape
+def read_dataset3(data_file, label_file):
+    X = sparse.load_npz(data_file)
+    X = sparse.csr_matrix(X)
+    #print data.keys()
+    #X = sparse.coo_matrix((data['data'], (data['row'], data['col'])), shape=data['shape'])
+    y = np.load(label_file)
+    
     return X,y
 
-#in_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/DS/ionosphere_odds.txt"
-#in_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/DS"
-#out_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/New_Benchmark_Datasets/ODDS/Results/Original/RSHash"
-print "Running RSHash"
-#file_name = sys.argv[1]
-#num_runs = int(sys.argv[2])
-#in_file = os.path.join(in_dir,file_name)
-#out_file = os.path.join(out_dir, file_name)
-in_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/http_smtp_continuous_Shuffled.csv"
-#out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous/RSHash/1000_RSHash_015_Shuffled.csv"
 
-#in_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/http_smtp_continuous_Shuffled.csv"
-#out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous/RSHash_Streming_Results_Shuffled.csv"
+data_file = "../../../Data/SPAM_URL.ssv.npz"
+label_file = "../../../Data/SPAM_URL.ssv_Labels.npy"
+X,y = read_dataset3(data_file, label_file)
 
-#in_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/smtp.csv"
-#out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SMTP/RSHash/256_RSHash_015.csv"
-
-#in_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/http_smtp_continuous.csv"
-in_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/SpamSmsCounts.csv"
-out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/1Per_RSHash_015.csv"
-
-X,y = read_dataset2(in_file)
-
-out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/256_RSHash_0015.csv"
-sampling_points=256
-decay = 0.015
-data = run_RSHash(X, y, sampling_points, decay)
-np.savetxt(out_file, data, delimiter=",")
-
-out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/1000_RSHash_0015.csv"
+out_file = "../../../SpamURL/1000_RSHash_0015.csv"
 sampling_points=1000
-decay = 0.015
-data = run_RSHash(X, y, sampling_points, decay)
-np.savetxt(out_file, data, delimiter=",")
-
-out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/1Per_RSHash_0015.csv"
-sampling_points=55
-decay = 0.015
-data = run_RSHash(X, y, sampling_points, decay)
-np.savetxt(out_file, data, delimiter=",")
-
-out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/10Per_RSHash_0015.csv"
-sampling_points=557
-decay = 0.015
-data = run_RSHash(X, y, sampling_points, decay)
-np.savetxt(out_file, data, delimiter=",")
-
-out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/25Per_RSHash_0015.csv"
-sampling_points=1393
 decay = 0.015
 data = run_RSHash(X, y, sampling_points, decay)
 np.savetxt(out_file, data, delimiter=",")

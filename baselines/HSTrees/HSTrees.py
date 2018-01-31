@@ -91,6 +91,9 @@ class Node(object):
         self.impurity = -1
         self.n_node_samples = -1
         self.weighted_n_node_samples = -1
+        ##
+        #self.r_node_samples = -1
+        #self.l_node_samples = -1
 
     def __str__(self):
         return "feature: %d, thres: %3.8f, n_node_samples: %3.2f, left: %d, right: %d" % \
@@ -148,6 +151,11 @@ class ArrTree(object):
         weighted_n_node_samples : array of int, shape [node_count]
             weighted_n_node_samples[i] holds the weighted number of training samples
             reaching node i.
+            
+        r_node_samples : array of int, shape [node_count]
+            r_node_samples[i] holds the number of training samples reaching node i in reference.
+        l_node_samples : 
+            l_node_samples[i] holds the number of training samples reaching node i in latest.
     """
     def __init__(self, n_features, max_depth=0):
         self.n_features = n_features
@@ -164,6 +172,8 @@ class ArrTree(object):
         self.value = None
         self.impurity = None
         self.n_node_samples = None
+        #self.r_node_samples = None
+        #self.l_node_samples = None
         self.weighted_n_node_samples = None
 
         self.value_stride = None
@@ -180,6 +190,8 @@ class ArrTree(object):
         self.impurity = np.zeros(0, dtype=float)
         self.n_node_samples = np.zeros(0, dtype=float)
         self.weighted_n_node_samples = np.zeros(0, dtype=float)
+        #self.r_node_samples = np.zeros(0, dtype=float)
+        #self.l_node_samples = np.zeros(0, dtype=float)
 
     def str_node(self, node_id):
         return "feature: %d, thres: %3.8f, n_node_samples: %3.2f, left: %d, right: %d" % \
@@ -215,6 +227,8 @@ class ArrTree(object):
         self.impurity = np.resize(self.impurity, capacity)
         self.n_node_samples = np.resize(self.n_node_samples, capacity)
         self.weighted_n_node_samples = np.resize(self.weighted_n_node_samples, capacity)
+        #self.r_node_samples = np.resize(self.r_node_samples, capacity)
+        #self.l_node_samples = np.resize(self.l_node_samples, capacity)
 
         # if capacity smaller than node_count, adjust the counter
         if capacity < self.node_count:
@@ -226,6 +240,8 @@ class ArrTree(object):
 
     def reset_n_node_samples(self):
         self.n_node_samples[:] = 0
+        #self.r_node_samples[:] = 0
+        #self.l_node_samples[:] = 0
 
     def add_node(self, parent, is_left, is_leaf, feature,
                  threshold, impurity, n_node_samples,
@@ -246,6 +262,7 @@ class ArrTree(object):
         self.nodes[node_id] = node_id
         self.impurity[node_id] = impurity
         self.n_node_samples[node_id] = n_node_samples
+        #self.r_node_samples[node_id] = n_node_samples
         self.weighted_n_node_samples[node_id] = weighted_n_node_samples
 
         if parent != TREE_UNDEFINED:
@@ -277,6 +294,7 @@ class ArrTree(object):
             while node >= 0:
                 if node > 0:  # not root
                     self.n_node_samples[node] += 1
+                    #self.r_node_samples[node] += 1
                 v = X[i, self.feature[node]]
                 if self.children_left[node] == -1 and self.children_right[node] == -1:
                     # reached leaf
@@ -454,7 +472,6 @@ class HSTreeBuilder(object):
 
             # logger.debug("feature ranges:\n%s" % str(split_context))
 
-            n_node_samples = 0
             splitter.node_reset(split_context)
 
             if first:
@@ -539,6 +556,7 @@ class HSTree(object):
         leaves, nodeinds = self.tree_.apply(X, getleaves=True, getnodeinds=True)
         depths = np.array(np.transpose(nodeinds.sum(axis=1)))
         scores = self.tree_.n_node_samples[leaves] * (2. ** depths)
+        
         return scores
 
 
