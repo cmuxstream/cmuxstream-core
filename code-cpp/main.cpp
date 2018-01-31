@@ -188,20 +188,20 @@ int main(int argc, char *argv[]) {
     // re-score first batch of tuples using the entire training sample
     cerr << "scoring first batch of " << init_sample_size << " tuples... " << endl;
     start = chrono::steady_clock::now();
-    if (score_once) {
-      for (uint row_idx = 0; row_idx < static_cast<uint>(init_sample_size); row_idx++) {
+    for (uint row_idx = 0; row_idx < static_cast<uint>(init_sample_size); row_idx++) {
+      if (score_once) {
         anomalyscores[row_idx] = chains_add(X[row_idx], feature_names, h, DENSITY, density_constant,
                                             deltamax, shift, cmsketches, fs, false);
+      }
 
-        // print scores at regular intervals
-        if ((row_idx > 0) && ((row_idx+1) % scoring_batch_size == 0)) {
-          print_scores(row_idx+1, ref(X), ref(feature_names),
-                       ref(h), DENSITY, density_constant,
-                       ref(deltamax), ref(shift),
-                       cmsketches, // copy
-                       ref(fs),
-                       ref(anomalyscores), score_once);
-        }
+      // print scores at regular intervals
+      if ((row_idx > 0) && ((row_idx+1) % scoring_batch_size == 0)) {
+        print_scores(row_idx+1, ref(X), ref(feature_names),
+                     ref(h), DENSITY, density_constant,
+                     ref(deltamax), ref(shift),
+                     cmsketches, // copy
+                     ref(fs),
+                     ref(anomalyscores), score_once);
       }
     }
     end = chrono::steady_clock::now();
