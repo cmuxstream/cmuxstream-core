@@ -5,10 +5,9 @@ C=100
 D=15
 N=100000 # scoring interval
 I=180173 # 25%
-./xstream --input ../data/http_smtp_continuous.csv\
+cat ../data/http_smtp_continuous.csv |\
+./xstream --fixed --nwindows=1\
   --k $K --c $C --d $D\
-  --fixed\
-  --nwindows 1\
   --initsample $I\
   --scoringbatch $N\
   --score-once\

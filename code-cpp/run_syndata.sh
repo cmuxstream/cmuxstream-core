@@ -5,10 +5,9 @@ C=100
 D=15
 N=5000 # scoring interval
 I=3082
-./xstream --input ../data/synDataNoisy.tsv\
+cat ../data/synDataNoisy.tsv |\
+./xstream --fixed --nwindows 0\
   --k $K --c $C --d $D\
-  --fixed\
-  --nwindows 0\
   --initsample $I\
   --scoringbatch $N\
   > ../results/scores_syndata_k"$K"_c"$C"_d"$D"_n"$N"_i"$I".txt

@@ -13,9 +13,7 @@ namespace std {
   chains_init_features(vector<vector<uint>>& fs, uint k, mt19937_64& prng);
 
   float
-  chains_add(vector<float>& x, vector<string>& feature_names,
-             vector<uint64_t>& h, float density, float constant,
-             vector<vector<float>>& deltamax, vector<vector<float>>& shift,
+  chains_add(vector<float>& xp, vector<vector<float>>& deltamax, vector<vector<float>>& shift,
              vector<vector<unordered_map<vector<int>,int>>>& cmsketches,
              vector<vector<uint>>& fs, bool update);
 
