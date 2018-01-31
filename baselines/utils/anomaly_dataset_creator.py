@@ -77,7 +77,7 @@ def convert_svmlight_to_dense(folder,out_file):
         X = sparse.csr_matrix(X)
         y = np.load(label_file)
         
-        X = full(X)
+        X = X.todense()
         np.savetxt(os.path.join(out_dir,"Day"+str(i)+".txt"),X,fmt='%.1f')
         print "Time taken="+str(time.time() - start_time)
     
