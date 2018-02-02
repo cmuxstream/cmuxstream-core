@@ -18,7 +18,7 @@ def compute_statistics(scores, labels):
 class Stream_RS_Hash(object):
     
     def __init__(self, data, labels,
-                 sampling_points = 1000,
+                 sampling_points = 20000,
                  decay = 0.015,
                  num_components = 100, 
                  num_hash_fns = 1, 
@@ -35,7 +35,7 @@ class Stream_RS_Hash(object):
         self.scores = []
         self.num_hash = num_hash_fns
         self.cmsketches = []
-        self.effS = max(1000, 1.0/(1 - np.power(2, -self.decay)))
+        self.effS = max(20000, 1.0/(1 - np.power(2, -self.decay)))
         print "setting s to:"+str(self.s)
         print "setting decay to:"+str(self.decay)
         print "Effective S="+str(self.effS)
@@ -99,7 +99,7 @@ class Stream_RS_Hash(object):
     def score_update_instance(self,X_sample, index):
         X_normalized = (X_sample - self.minimum)/(self.maximum - self.minimum)
         X_normalized[np.abs(X_normalized) == np.inf] = 0
-	X_normalized =  np.asarray(X_normalized).ravel()
+        X_normalized =  np.asarray(X_normalized).ravel()
         score_instance = 0
         for r in range(self.m):
             Y = -1 * np.ones(len(self.V[r]))
@@ -225,7 +225,7 @@ label_file = "../../../Data/SPAM_URL.ssv_Labels.npy"
 X,y = read_dataset3(data_file, label_file)
 
 out_file = "../../../SpamURL/1000_RSHash_0015.csv"
-sampling_points=1000
+sampling_points=20000
 decay = 0.015
 data = run_RSHash(X, y, sampling_points, decay)
 np.savetxt(out_file, data, delimiter=",")

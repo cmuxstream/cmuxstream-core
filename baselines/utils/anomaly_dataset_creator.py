@@ -7,6 +7,15 @@ from scipy.io import loadmat,savemat
 from scipy import sparse
 from cryptography.hazmat.primitives.ciphers.modes import CTR
 
+def read_dataset3(data_file, label_file):
+    X = sparse.load_npz(data_file)
+    X = sparse.csr_matrix(X)
+    #print data.keys()
+    #X = sparse.coo_matrix((data['data'], (data['row'], data['col'])), shape=data['shape'])
+    y = np.load(label_file)
+    
+    return X,y
+
 def read_dataset(in_file):
     data = np.loadtxt(in_file, delimiter=',')
     X = data[:,0:data.shape[1]-1]
@@ -80,7 +89,12 @@ def daywise_convertsvmlight(folder, out_dir):
     for i in range(0,121):
         start_time = time.time()
         print "Processing Day:"+str(i)
-        f=open(os.path.join(folder,"Day"+str(i)+".svm"),"r")
+        if i==45:
+            f=open(os.path.join(folder,"Day45_46.svm"),"r")
+            i=i+1
+        else:
+            f=open(os.path.join(folder,"Day"+str(i)+".svm"),"r")
+        
         out_file=os.path.join(out_dir,"Day"+str(i))
         #fw=open(out_file,'w')
         column_list = []
@@ -182,6 +196,29 @@ def convert_svmlight_to_file(folder,out_file):
     savemat(out_file+"_Labels.mat",{'labels':np.array(labels)})
     
 
+def combine_day45and46(in_folder):
+    day45_file = os.path.join(in_folder,"Day45.svm")
+    day46_file = os.path.join(in_folder,"Day46.svm")
+    
+    fw=open(os.path.join(in_folder,"Day45_46.svm"),"w")
+    f=open(day45_file,'r')
+    line=f.readline()
+    while line:
+        fw.write(line)
+        line=f.readline()
+    f.close()
+    
+    print "Written 45"
+    f=open(day46_file,'r')
+    line=f.readline()
+    while line:
+        fw.write(line)
+        line=f.readline()
+    f.close()
+    print "Written 46"
+    fw.close()
+    
+
 def modify_fraction(X,y,fraction):
     fraction_anoms = int(fraction * X.shape[0])
     anom_indexes = np.where(y==1)[0]
@@ -242,16 +279,23 @@ def main():
     
     folder = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/url_svmlight"
     out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/SPAM_URL.ssv"
-    convert_svmlight_to_file(folder,out_file)
+    #convert_svmlight_to_file(folder,out_file)
+    
+    in_folder = "../../../Data/url_svmlight"
+    combine_day45and46(in_folder)
     
     folder = "../../../Data/url_svmlight"
     out_dir = "../../../Data/mod_url_svmlight"
-    #daywise_convertsvmlight(folder, out_dir)
+    daywise_convertsvmlight(folder, out_dir)
     #convert_svmlight_to_dense("../../../Data/mod_url_svmlight","../../../Data/mod_url_svmlight2")
     
     folder = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/url_svmlight"
     out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/parametersNdata_SpamURL.txt"
     #convert_to_HSTreeFile(folder, out_file)
+    
+    
+    
+     
     
 if __name__ == '__main__':
     main()
