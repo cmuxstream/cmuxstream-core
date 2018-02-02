@@ -17,11 +17,18 @@ namespace std {
   streamhash_hash(string& s, uint64_t seed, float density, float constant);
 
   float
+  streamhash_hash(uint32_t& i, uint64_t seed, float density, float constant);
+
+  float
   streamhash_empirical_density(string& s, mt19937_64& prng, float density,
                                float constant);
 
   vector<float>
   streamhash_project(vector<float>& x, vector<string>& feature_names,
+                     vector<uint64_t>& h, float density, float constant);
+
+  vector<float>
+  streamhash_project(vector<string>& fields, bool fixed, 
                      vector<uint64_t>& h, float density, float constant);
 }
 #endif

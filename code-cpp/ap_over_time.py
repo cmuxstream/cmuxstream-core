@@ -14,8 +14,15 @@ if __name__ == "__main__":
     print >> sys.stderr, "Data file:", data_file 
     print >> sys.stderr, "Scores file:", scores_file 
 
-    X = np.loadtxt(data_file, delimiter="\t")
-    y = X[:,-1].astype(int)
+    y = []
+    with open(data_file, "r") as f:
+        for line in f:
+            fields = line.strip().split()
+            label = int(fields[-1])
+            if label < 0:
+                label += 1
+            y.append(label)
+    y = np.array(y)
 
     with open(scores_file, "r") as f:
         for line in f:

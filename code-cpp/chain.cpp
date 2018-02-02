@@ -25,19 +25,15 @@ namespace std {
   }
 
   float
-  chains_add(vector<float>& x, vector<string>& feature_names,
-             vector<uint64_t>& h, float density, float constant,
-             vector<vector<float>>& deltamax, vector<vector<float>>& shift,
+  chains_add(vector<float>& xp, vector<vector<float>>& deltamax, vector<vector<float>>& shift,
              vector<vector<unordered_map<vector<int>,int>>>& cmsketches,
              vector<vector<uint>>& fs, bool update) {
 
-    uint k = h.size();
+    uint k = xp.size();
     uint nchains = cmsketches.size();
     uint depth = cmsketches[0].size();
 
     vector<vector<float>> bincount(nchains, vector<float>(depth));
-    vector<float> xp = streamhash_project(x, feature_names, h, density,
-                                          constant);
 
     // compute bincounts
     for (uint c = 0; c < nchains; c++) {

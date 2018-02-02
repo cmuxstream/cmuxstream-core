@@ -7,10 +7,9 @@ C=100
 D=15
 N=100 # scoring interval
 I=1394 # 25%
-./xstream --input ../data/spam-sms-preprocessed-counts.tsv\
+cat ../data/spam-sms-preprocessed-counts.tsv |\
+./xstream --fixed --nwindows=1\
   --k $K --c $C --d $D\
-  --fixed\
-  --nwindows 1\
   --initsample $I\
   --scoringbatch $N\
   --score-once\
