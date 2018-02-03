@@ -225,8 +225,8 @@ def read_dataset3(data_file, label_file):
     return X,y
 
 
-data_file = "../../../Data/SPAM_URL/SPAM_URL.ssv.npz"
-label_file = "../../../Data/SPAM_URL/SPAM_URL.ssv_Labels.npy"
+data_file = "../../../Data/SPAM_URL.ssv.npz"
+label_file = "../../../Data/SPAM_URL.ssv_Labels.npy"
 X,y = read_dataset3(data_file, label_file)
 print "File Read"
 
