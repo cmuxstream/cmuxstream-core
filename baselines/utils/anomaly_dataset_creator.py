@@ -91,12 +91,12 @@ def daywise_convertsvmlight(folder, out_dir):
         print "Processing Day:"+str(i)
         if i==45:
             f=open(os.path.join(folder,"Day45_46.svm"),"r")
+            out_file=os.path.join(out_dir,"Day45_46.svm")
             i=i+1
         else:
             f=open(os.path.join(folder,"Day"+str(i)+".svm"),"r")
+            out_file=os.path.join(out_dir,"Day"+str(i))
         
-        out_file=os.path.join(out_dir,"Day"+str(i))
-        #fw=open(out_file,'w')
         column_list = []
         data_vals = []
         labels = []
@@ -133,6 +133,7 @@ def daywise_convertsvmlight(folder, out_dir):
         np.save(out_file+"_Labels.npy",np.array(labels))
         savemat(out_file+".mat",{'vect':m})
         savemat(out_file+"_Labels.mat",{'labels':np.array(labels)})
+        print "Length of Label="+str(len(labels))
         
 
 def convert_svmlight_to_dense(folder,out_file):
