@@ -192,7 +192,8 @@ class Stream_RS_Hash(object):
         scores = scores/self.m
         return scores
         
-def run_RSHash(X,y,sampling_points,decay):
+def run_RSHash(X,y,sampling_points,decay,out_file):
+    fw=open(out_file,'w')
     srhash = Stream_RS_Hash(X,y, sampling_points, decay)
     print "Burning In...."
     scores = list(srhash.burn_in())
@@ -204,10 +205,14 @@ def run_RSHash(X,y,sampling_points,decay):
             print idx, time.time() - start_time
             start_time = time.time()
             
+        
+        fw.write(str(score)+"\n")
+        fw.flush()
         scores.append(score)
         
     data = np.column_stack((scores,y))
     return data
+    fw.close()
     
         
 def read_dataset3(data_file, label_file):
@@ -223,9 +228,10 @@ def read_dataset3(data_file, label_file):
 data_file = "../../../Data/SPAM_URL/SPAM_URL.ssv.npz"
 label_file = "../../../Data/SPAM_URL/SPAM_URL.ssv_Labels.npy"
 X,y = read_dataset3(data_file, label_file)
+print "File Read"
 
-out_file = "../../../SpamURL/1000_RSHash_0015.csv"
+out_file = "../../../SpamURL/20K_RSHash_0015.csv"
 sampling_points=20000
 decay = 0.015
-data = run_RSHash(X, y, sampling_points, decay)
-np.savetxt(out_file, data, delimiter=",")
+data = run_RSHash(X, y, sampling_points, decay, out_file)
+#np.savetxt(out_file, data, delimiter=",")
