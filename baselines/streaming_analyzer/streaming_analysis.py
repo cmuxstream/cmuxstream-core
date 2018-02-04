@@ -91,6 +91,39 @@ def Analyze_Stream_Dir(score_dir,method):
                 fw.write(fname+"\t"+str(auc)+"\t"+str(ap)+"\n")
     fw.close()
 
+def Analyze_Stream_SpamURL(scores, labels,out_file):
+    nelements = len(scores)
+    print np.sum(labels)
+    anom_index = np.where(labels==1.0)[0][0]
+    print "Anom Index="+str(anom_index)
+    
+    fw=open(out_file,"w")
+    for idx in tqdm(range(anom_index,len(scores)), desc='Computing AP...'):
+    #for idx in tqdm(range(1,len(scores)), desc='Computing AP...'):
+        if(idx%20000) == 0:
+            s = scores[:idx+1]
+            auc, ap = compute_statistics(s, labels[:idx+1])
+            fw.write(str(idx)+"\t"+"{:.4f}".format(ap)+"\t"+"{:.4f}".format(auc)+"\t\n")
+            fw.flush()
+            
+    auc, ap = compute_statistics(scores, labels)
+    print "AUC="+str(auc)+" & AP ="+str(ap)
+    fw.write(str(idx)+"\t"+"{:.4f}".format(ap)+"\t"+"{:.4f}".format(auc)+"\t\n")
+    fw.flush()
+    fw.close()
+    
+    data=np.loadtxt(out_file)
+    plt.figure(figsize=(8,6))
+    plt.plot(data[:,0],data[:,1],linewidth=3.0)
+    plt.xlabel("Num Instances",fontsize=24)
+    plt.ylabel("AP",fontsize=24)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=20)
+    plt.savefig(out_file+"_AP.pdf")
+    plt.close()
+    
+    return auc,ap
+
 def Analyze_Stream_Data(score_dir,fname,method):
     if method == "HST":
         data = np.loadtxt(os.path.join(score_dir,fname+".csv"),delimiter=",")
@@ -113,7 +146,7 @@ def Analyze_Stream_Data(score_dir,fname,method):
     fw=open(os.path.join(score_dir,fname+"_Stats.txt"),"w")
     for idx in tqdm(range(anom_index,len(scores)), desc='Computing AP...'):
     #for idx in tqdm(range(1,len(scores)), desc='Computing AP...'):
-        if(idx%100) == 0:
+        if(idx%20000) == 0:
             s = scores[:idx+1]
             auc, ap = compute_statistics(s, labels[:idx+1])
             fw.write(str(idx)+"\t"+"{:.4f}".format(ap)+"\t"+"{:.4f}".format(auc)+"\t\n")
@@ -146,7 +179,7 @@ def Analyze_Stream_LODA(score_dir,fname):
     f=open(os.path.join(score_dir,fname+"_APScores.txt"),"w")
     #f=open(os.path.join(score_dir,fname+"_AUCScores.txt"),"w")
     for idx in tqdm(range(initial_sample_size, len(scores)), desc="Streaming..."):
-        if (idx % 100000) == 0:
+        if (idx % 20000) == 0:
             s = scores[:idx+1]
             average_precision = average_precision_score(labels[:idx+1], s)
             #auc = roc_auc_score(labels, scores)
@@ -175,6 +208,114 @@ def Analyze_Stream_LODA(score_dir,fname):
     print "AUC="+str(auc)+" & AP="+str(ap)
     return auc,ap
     
+def Create_Streaming_Table(base_dir,out_file):
+    fw=open(out_file,'w')
+    winSize_HttpSmtp = [7206,36034,72069,180173]
+    winSize_SpamSMS = [55,278,557,1393]
+    
+    # Doing for HttpSmtp First
+    hstree_dir =  os.path.join(base_dir,"HttpSmtpContinuous","HSTrees4")
+    rshash_dir = os.path.join(base_dir,"HttpSmtpContinuous", "RSHash4")
+    loda_dir = os.path.join(base_dir,"HttpSmtpContinuous", "LODA4")
+    
+    fw.write("HttpSmtpContinuous\n")
+    perc2={1:7206, 2:36034, 3:72069, 4:180173}
+    for perc in [1,5,10,25]:
+        hst_auc_arr=[]
+        hst_ap_arr=[]
+        rsh_auc_arr=[]
+        rsh_ap_arr=[]
+        loda_auc_arr=[]
+        loda_ap_arr=[]
+        for run_id in range(1,4):
+            hstree_file = os.path.join(hstree_dir,"HST_Run"+str(run_id)+"_"+str(perc)+"Per_AnormalyScore_HttpSmtpContinuous_0.csv")
+            data = np.loadtxt(hstree_file,delimiter=",")
+            scores = -data[:,1]
+            labels = data[:,0].astype(int)
+            auc, ap = compute_statistics(scores, labels)
+            hst_auc_arr.append(auc)
+            hst_ap_arr.append(ap)
+            
+            
+            rshash_file = os.path.join(rshash_dir,"RSH_"+str(perc2[perc])+"_"+str(run_id)+".csv")
+            data = np.loadtxt(rshash_file,delimiter=",")
+            scores = -data[:,0]
+            labels = data[:,1].astype(int)
+            auc, ap = compute_statistics(scores, labels)
+            rsh_auc_arr.append(auc)
+            rsh_ap_arr.append(ap)
+            
+            loda_file = os.path.join(loda_dir,"LODA_"+str(perc2[perc])+"_"+str(run_id)+".csv")
+            data = np.loadtxt(loda_file,delimiter=",")
+            scores = data[:,0]
+            labels = data[:,1].astype(int)
+            auc, ap = compute_statistics(scores, labels)
+            loda_auc_arr.append(auc)
+            loda_ap_arr.append(ap)
+            
+        hst_auc_arr =  np.array(hst_auc_arr)
+        hst_ap_arr = np.array(hst_ap_arr)
+        rsh_auc_arr =  np.array(rsh_auc_arr)
+        rsh_ap_arr = np.array(rsht_ap_arr)
+        loda_auc_arr =  np.array(loda_auc_arr)
+        loda_ap_arr = np.array(loda_ap_arr)
+        fw.write(str(perc)+"\t"+str(hst_auc_arr)+","+str(hst_ap_arr))
+        fw.write("\t"+str(rsh_auc_arr)+","+str(rsh_ap_arr))
+        fw.write("\t"+str(loda_auc_arr)+","+str(loda_ap_arr)+"\n")
+        
+    
+    #Doing for SpamSMS First
+    hstree_dir =  os.path.join(base_dir,"SpamSMSCounts","HSTrees3")
+    rshash_dir = os.path.join(base_dir,"SpamSMSCounts", "RSHash3")
+    loda_dir = os.path.join(base_dir,"SpamSMSCounts", "LODA3")
+    fw.write("SpamSMS\n")
+    perc2={1:55, 2:278, 3:557, 4:1393}
+    for perc in [1,5,10,25]:
+        hst_auc_arr=[]
+        hst_ap_arr=[]
+        rsh_auc_arr=[]
+        rsh_ap_arr=[]
+        loda_auc_arr=[]
+        loda_ap_arr=[]
+        for run_id in range(1,4):
+            hstree_file = os.path.join(hstree_dir,"HST_Run"+str(run_id)+"_"+str(perc)+"Per_AnormalyScore_HttpSmtpContinuous_0.csv")
+            data = np.loadtxt(hstree_file,delimiter=",")
+            scores = -data[:,1]
+            labels = data[:,0].astype(int)
+            auc, ap = compute_statistics(scores, labels)
+            hst_auc_arr.append(auc)
+            hst_ap_arr.append(ap)
+            
+            
+            rshash_file = os.path.join(rshash_dir,"RSH_"+str(perc2[perc])+"_"+str(run_id)+".csv")
+            data = np.loadtxt(rshash_file,delimiter=",")
+            scores = -data[:,0]
+            labels = data[:,1].astype(int)
+            auc, ap = compute_statistics(scores, labels)
+            rsh_auc_arr.append(auc)
+            rsh_ap_arr.append(ap)
+            
+            loda_file = os.path.join(loda_dir,"LODA_"+str(perc2[perc])+"_"+str(run_id)+".csv")
+            data = np.loadtxt(loda_file,delimiter=",")
+            scores = data[:,0]
+            labels = data[:,1].astype(int)
+            auc, ap = compute_statistics(scores, labels)
+            loda_auc_arr.append(auc)
+            loda_ap_arr.append(ap)
+            
+        hst_auc_arr =  np.array(hst_auc_arr)
+        hst_ap_arr = np.array(hst_ap_arr)
+        rsh_auc_arr =  np.array(rsh_auc_arr)
+        rsh_ap_arr = np.array(rsht_ap_arr)
+        loda_auc_arr =  np.array(loda_auc_arr)
+        loda_ap_arr = np.array(loda_ap_arr)
+        fw.write(str(perc)+"\t"+str(hst_auc_arr)+","+str(hst_ap_arr))
+        fw.write("\t"+str(rsh_auc_arr)+","+str(rsh_ap_arr))
+        fw.write("\t"+str(loda_auc_arr)+","+str(loda_ap_arr)+"\n")
+        
+    fw.close()
+    
+    
 
 if __name__ == '__main__':
     #score_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HTTP/AnormalyScore_http_0.csv"
@@ -188,17 +329,26 @@ if __name__ == '__main__':
     #convert_from_HSTreeFile(in_file, out_file)
     #print STOP
     
-    score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/HSTrees2/"
-    Analyze_Stream_Dir(score_dir,"HST")
-    #score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/LODA2/"
+    base_dir = "../../../Streaming_HighDim_Case/"
+    out_file = "../../../Streaming_HighDim_Case/"
+    Create_Streaming_Table(base_dir,out_file)
+    
+    #score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous/RSHash3/"
+    #Analyze_Stream_Dir(score_dir,"RSH")
+    #score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/S  treaming_HighDim_Case/SpamSMSCounts/LODA2/"
     #Analyze_Stream_Dir(score_dir,"LODA")
     #score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamSMSCounts/RSHash2/"
     #Analyze_Stream_Dir(score_dir,"RSH")
     #score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous_Shuffled/RSHash/"
     #Analyze_Stream_Dir(score_dir,"RSH")
-    #score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous_Shuffled/LODA/"
-    #Analyze_Stream_Dir(score_dir,"LODA")
+    #score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/SpamURL/RSHash/"
+    #Analyze_Stream_Dir(score_dir,"RSH")
 
+    #scores = np.loadtxt("/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Plotting_Notebooks/Data/Streaming/SpamURL/LODA/Overall_Sccores.csv",delimiter=",")
+    #labels = np.loadtxt("/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Plotting_Notebooks/Data/Streaming/SpamURL/LODA/Overall_Labels.csv",delimiter=",")
+    #out_file = "../../../Plotting_Notebooks/Data/Streaming/SpamURL/LODA/DayByDay_SpamURL_Stats.txt"
+    #Analyze_Stream_SpamURL(scores, labels,out_file)
+    
     '''
     score_dir = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/HttpSmtpContinuous/LODA"
     fname = "LODA_10per_dense_TwoWin_500"

@@ -5,6 +5,16 @@ import pandas as pd
 import time
 from scipy.io import loadmat,savemat
 from scipy import sparse
+from cryptography.hazmat.primitives.ciphers.modes import CTR
+
+def read_dataset3(data_file, label_file):
+    X = sparse.load_npz(data_file)
+    X = sparse.csr_matrix(X)
+    #print data.keys()
+    #X = sparse.coo_matrix((data['data'], (data['row'], data['col'])), shape=data['shape'])
+    y = np.load(label_file)
+    
+    return X,y
 
 def read_dataset(in_file):
     data = np.loadtxt(in_file, delimiter=',')
@@ -13,13 +23,80 @@ def read_dataset(in_file):
     print X.shape, y.shape
     return X, y
 
+def convert_to_HSTreeFile(data_dir, out_file):
+    fw = open(out_file, "w")
+    data_size = 2396130
+    tot_cols = 3231962
+    fw.write("*** PARAMETERS ***\t\t\t\t\tdistType\tDistance Measure\n")
+    fw.write("dataSize:\t"+str(data_size)+"\t\t\t\t1\tCosineMeasure\n")
+    fw.write("numClusters:\t"+str(2)+"\t\t\t\t2\tEuclideanMeasure\n")
+    fw.write("distType:\t"+str(1)+"\t\t\t\t\t\n")
+    fw.write("dimension:\t"+str(tot_cols)+"\t\t\t\t\t\n")
+    fw.write("\n")
+    fw.write("*** Data ***\n")
+    
+    
+    #Read First Day
+    cols_dict={}
+    ctr=0
+    f=open(os.path.join(data_dir,'Day0.svm'),'r')
+    line=f.readline()
+    while line:
+        line=line.replace("\n","")
+        split = line.split()
+        label = int(split[0])
+        if label==-1:
+            label=0
+        for i in range(1, len(split)):
+            split2 = split[i].split(":")
+            col_num=int(split2[0])
+            val=float(split2[1])
+            try:
+                col_index=cols_dict[col_num]
+            except Exception,e:
+                cols_dict[col_num] = ctr
+                ctr+=1
+        line=f.readline()
+    f.close()
+    
+    print "Num Cols Reduced to:"+str(len(cols_dict.keys()))
+    for i in range(0, 121):
+        print i
+        f=open(os.path.join(data_dir,'Day'+str(i)+'.svm'),"r")
+        line=f.readline()
+        while line:
+            line=line.replace("\n","")
+            split = line.split()
+            label = int(split[0])
+            if label==-1:
+                label=0
+            fw.write(str(label))
+            for i in range(1, len(split)):
+                split2=split[i].split(":")
+                col_num = int(split2[0])
+                try:
+                    col_index =  cols_dict[col_num]
+                    fw.write("\t"+str(col_index)+":"+str(split2[1]))
+                except Exception,e:
+                    a=0
+            fw.write("\n")
+            line=f.readline()
+        f.close()
+        fw.flush()
+    fw.close()
+    
 def daywise_convertsvmlight(folder, out_dir):
     for i in range(0,121):
         start_time = time.time()
         print "Processing Day:"+str(i)
-        f=open(os.path.join(folder,"Day"+str(i)+".svm"),"r")
-        out_file=os.path.join(out_dir,"Day"+str(i))
-        #fw=open(out_file,'w')
+        if i==45:
+            f=open(os.path.join(folder,"Day45_46.svm"),"r")
+            out_file=os.path.join(out_dir,"Day45_46.svm")
+            i=i+1
+        else:
+            f=open(os.path.join(folder,"Day"+str(i)+".svm"),"r")
+            out_file=os.path.join(out_dir,"Day"+str(i))
+        
         column_list = []
         data_vals = []
         labels = []
@@ -40,21 +117,11 @@ def daywise_convertsvmlight(folder, out_dir):
                 split2 = split[i].split(":")
                 cols.append(int(split2[0]))
                 values.append(float(split2[1]))
-                #dict_values[int(split2[0])] = float(split2[1])
                 
-            #for i in range(3231961):
-            #    try:
-            #        val = dict_values[i]
-            #    except KeyError,e:
-            #       val = 0
-                    
-            #   fw.write(str(val)+" ")
-            #fw.write(str(label)+"\n") 
             column_list.append(cols)
             data_vals.append(values)
             line=f.readline()
         f.close()
-        #fw.close()
         print "Time Taken="+str(time.time()-start_time)
         lengths = [len(row) for row in column_list]
         cols = np.concatenate(column_list)
@@ -66,6 +133,7 @@ def daywise_convertsvmlight(folder, out_dir):
         np.save(out_file+"_Labels.npy",np.array(labels))
         savemat(out_file+".mat",{'vect':m})
         savemat(out_file+"_Labels.mat",{'labels':np.array(labels)})
+        print "Length of Label="+str(len(labels))
         
 
 def convert_svmlight_to_dense(folder,out_file):
@@ -109,34 +177,47 @@ def convert_svmlight_to_file(folder,out_file):
             
             for i in range(1,len(split)):
                 split2 = split[i].split(":")
-                #cols.append(int(split2[0]))
-                #values.append(float(split2[1]))
-                dict_values[int(split2[0])] = float(split2[1])
+                cols.append(int(split2[0]))
+                values.append(float(split2[1]))
             
-            for i in range(3231961):
-                try:
-                    val = dict_values[i]
-                except KeyError,e:
-                    val = 0
-                    
-                fw.write(str(val)+" ")
-            fw.write(str(label)+"\n")    
-            #column_list.append(cols)
-            #data_vals.append(values)
+            column_list.append(cols)
+            data_vals.append(values)
             line=f.readline()
         f.close()
         print "Time Taken="+str(time.time()-start_time)
+    lengths = [len(row) for row in column_list]
+    cols = np.concatenate(column_list)
+    rows = np.repeat(np.arange(len(column_list)), lengths)
+    data_vals = np.concatenate(data_vals)
+    m = sparse.coo_matrix((data_vals, (rows, cols)))
+    print m.shape
+    sparse.save_npz(out_file+".npz", m)
+    np.save(out_file+"_Labels.npy",np.array(labels))
+    savemat(out_file+".mat",{'vect':m})
+    savemat(out_file+"_Labels.mat",{'labels':np.array(labels)})
+    
+
+def combine_day45and46(in_folder):
+    day45_file = os.path.join(in_folder,"Day45.svm")
+    day46_file = os.path.join(in_folder,"Day46.svm")
+    
+    fw=open(os.path.join(in_folder,"Day45_46.svm"),"w")
+    f=open(day45_file,'r')
+    line=f.readline()
+    while line:
+        fw.write(line)
+        line=f.readline()
+    f.close()
+    
+    print "Written 45"
+    f=open(day46_file,'r')
+    line=f.readline()
+    while line:
+        fw.write(line)
+        line=f.readline()
+    f.close()
+    print "Written 46"
     fw.close()
-    #lengths = [len(row) for row in column_list]
-    #cols = np.concatenate(column_list)
-    #rows = np.repeat(np.arange(len(column_list)), lengths)
-    #data_vals = np.concatenate(data_vals)
-    #m = sparse.coo_matrix((data_vals, (rows, cols)))
-    #print m.shape
-    #sparse.save_npz(out_file+".npz", m)
-    #np.save(out_file+"_Labels.npy",np.array(labels))
-    #savemat(out_file+".mat",{'vect':m})
-    #savemat(out_file+"_Labels.mat",{'labels':np.array(labels)})
     
 
 def modify_fraction(X,y,fraction):
@@ -198,13 +279,24 @@ def main():
     #convert_spectf_to_txt(in_file, out_file)
     
     folder = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/url_svmlight"
-    out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/SPAM_URL.ssv_DENSE"
+    out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/SPAM_URL.ssv"
     #convert_svmlight_to_file(folder,out_file)
+    
+    in_folder = "../../../Data/url_svmlight"
+    combine_day45and46(in_folder)
     
     folder = "../../../Data/url_svmlight"
     out_dir = "../../../Data/mod_url_svmlight"
-    #daywise_convertsvmlight(folder, out_dir)
-    convert_svmlight_to_dense("../../../Data/mod_url_svmlight","../../../Data/mod_url_svmlight2")
+    daywise_convertsvmlight(folder, out_dir)
+    #convert_svmlight_to_dense("../../../Data/mod_url_svmlight","../../../Data/mod_url_svmlight2")
+    
+    folder = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/url_svmlight"
+    out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/parametersNdata_SpamURL.txt"
+    #convert_to_HSTreeFile(folder, out_file)
+    
+    
+    
+     
     
 if __name__ == '__main__':
     main()
