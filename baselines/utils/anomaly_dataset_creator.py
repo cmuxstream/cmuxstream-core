@@ -91,7 +91,7 @@ def daywise_convertsvmlight(folder, out_dir):
         print "Processing Day:"+str(i)
         if i==45:
             f=open(os.path.join(folder,"Day45_46.svm"),"r")
-            out_file=os.path.join(out_dir,"Day45_46.svm")
+            out_file=os.path.join(out_dir,"Day45_46")
             i=i+1
         else:
             f=open(os.path.join(folder,"Day"+str(i)+".svm"),"r")
