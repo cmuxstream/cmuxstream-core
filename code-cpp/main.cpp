@@ -31,6 +31,7 @@ R"(xstream.
               [--initsample=<initial sample size>]
               [--scoringbatch=<scoring batch size>]
               [--score-once]
+              [--no-project]
 
       xstream (-h | --help)
 
@@ -44,6 +45,7 @@ R"(xstream.
       --initsample=<initial sample size>   Initial sample size [default: 256].
       --scoringbatch=<scoring batch size>  Scoring batch size [default: 1000].
       --score-once                         Score each point only once.
+      --no-project                         Do not project input tuples.
 )";
 
 tuple<vector<vector<float>>,vector<vector<float>>>
@@ -72,6 +74,7 @@ int main(int argc, char *argv[]) {
   uint d = args["--d"].asLong();
   bool fixed = args["--fixed"].asBool();
   bool score_once = args["--score-once"].asBool();
+  bool no_project = args["--no-project"].asBool();
 
   int nwindows = args["--nwindows"].asLong(); // no windows by default
   uint init_sample_size = args["--initsample"].asLong(); // full data size by default
@@ -116,11 +119,11 @@ int main(int argc, char *argv[]) {
 
   // only required for retrospective scoring, not part of the model
   vector<vector<float>> alltuples;
-  alltuples.reserve(5000 * 100);
+  alltuples.reserve(1000000 * 100);
 
   // only required for score-once scoring
   vector<float> anomalyscores;
-  anomalyscores.reserve(5000);
+  anomalyscores.reserve(1000000);
 
   // input tuples
   cerr << "streaming tuples from stdin..." << endl;
@@ -138,8 +141,25 @@ int main(int argc, char *argv[]) {
     while (ss >> field) { fields.push_back(field); }
     fields.pop_back(); // delete label
 
-    // project tuple
-    vector<float> xp = streamhash_project(fields, fixed, h, DENSITY, density_constant);
+    vector<float> xp;
+    if (no_project) {
+      // do not project tuple
+      if (!fixed) {
+        cerr << "No projection only possible with fixed feature spaces!" << endl;
+        exit(1);
+      }
+      if (k != fields.size()) {
+        cerr << "k = " << k << ", D = " << fields.size() << ": ";
+        cerr << "No projection requires k be equal to the dimensionality!" << endl;
+        exit(1);
+      }
+      for (uint j = 0; j < fields.size(); j++) {
+        xp.push_back(atof(fields[j].c_str()));
+      }
+    } else {
+      // project tuple
+      xp = streamhash_project(fields, fixed, h, DENSITY, density_constant);
+    }
     alltuples.push_back(xp);
 
     // if the initial sample has not been seen yet, continue
@@ -165,8 +185,12 @@ int main(int argc, char *argv[]) {
       // score initial sample tuples
       cerr << "scoring first batch of " << init_sample_size << " tuples... " << endl;
       for (auto x : window) {
-        anomalyscores.push_back(chains_add(x, deltamax, shift, cmsketches,
-                                                               fs, false)); }
+        float anomalyscore;
+        //vector<float> bincount;
+        //tie(anomalyscore, bincount) = chains_add(x, deltamax, shift, cmsketches, fs, false);
+        anomalyscore = chains_add(x, deltamax, shift, cmsketches, fs, false);
+        anomalyscores.push_back(anomalyscore);
+      }
 
       window_size = 0;
       row_idx++;
@@ -178,7 +202,11 @@ int main(int argc, char *argv[]) {
     if (nwindows <= 0) { // non-windowed mode
 
       // add point to chains, store anomaly scores for score-once mode
-      anomalyscores.push_back(chains_add(xp, deltamax, shift, cmsketches, fs, true));
+      float anomalyscore;
+      //vector<float> bincount;
+      //tie(anomalyscore, bincount) = chains_add(xp, deltamax, shift, cmsketches, fs, true);
+      anomalyscore = chains_add(xp, deltamax, shift, cmsketches, fs, true);
+      anomalyscores.push_back(anomalyscore);
 
     } else if (nwindows > 0) { // windowed mode
       window[window_size] = xp;
@@ -186,7 +214,11 @@ int main(int argc, char *argv[]) {
 
       // store anomaly-score for score-once mode, do not update chains
       if (score_once) {
-        anomalyscores.push_back(chains_add(xp, deltamax, shift, cmsketches, fs, false));
+        float anomalyscore;
+        //vector<float> bincount;
+        //tie(anomalyscore, bincount) = chains_add(xp, deltamax, shift, cmsketches, fs, false);
+        anomalyscore = chains_add(xp, deltamax, shift, cmsketches, fs, false);
+        anomalyscores.push_back(anomalyscore);
       }
 
       // if the batch limit is reached, construct new chains
@@ -210,17 +242,18 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    // print scores for all seen points at regular intervals
-    if ((row_idx > init_sample_size) && (row_idx % scoring_batch_size == 0)) {
-      cerr << "\tscoring at tuple: " << row_idx << endl;
-      cout << row_idx << "\t";
-      for (uint i = 0; i < alltuples.size(); i++) {
-        float anomalyscore;
-        if (score_once) { anomalyscore = anomalyscores[i]; }
-        else { anomalyscore = chains_add(alltuples[i], deltamax, shift, cmsketches, fs, false); }
-        cout << setprecision(12) << anomalyscore << " ";
+    if (!score_once) {
+      // retrospective scoring
+      if ((row_idx > init_sample_size) && (row_idx % scoring_batch_size == 0)) {
+        cerr << "\tscoring at tuple: " << row_idx << endl;
+        cout << row_idx << "\t";
+        for (uint i = 0; i < alltuples.size(); i++) {
+          float anomalyscore;
+          vector<float> bincount;
+          cout << setprecision(12) << anomalyscore << " ";
+        }
+        cout << endl;
       }
-      cout << endl;
     }
 
     row_idx++;
@@ -240,14 +273,34 @@ int main(int argc, char *argv[]) {
   cout << alltuples.size() << "\t";
   for (uint i = 0; i < alltuples.size(); i++) {
     float anomalyscore;
-    if (score_once) { anomalyscore = anomalyscores[i]; }
-    else { anomalyscore = chains_add(alltuples[i], deltamax, shift, cmsketches, fs, false); }
+    if (score_once) {
+      anomalyscore = anomalyscores[i];
+    } else {
+      //vector<float> bincounts;
+      //tie(anomalyscore, bincounts) = chains_add(alltuples[i], deltamax, shift, cmsketches, fs,
+      //                                          false);
+      anomalyscore = chains_add(alltuples[i], deltamax, shift, cmsketches, fs, false);
+    }
     cout << setprecision(12) << anomalyscore << " ";
   }
   cout << endl;
   end = chrono::steady_clock::now();
   diff = chrono::duration_cast<chrono::milliseconds>(end - start);
   cerr << "done in " << diff.count() << "ms" << endl;
+
+  // print bincounts
+  /*
+  cerr << "bincounts..." << endl;
+  for (uint i = 0; i < alltuples.size(); i++) {
+    float anomalyscore;
+    vector<float> bincount;
+    tie(anomalyscore, bincount) = chains_add(alltuples[i], deltamax, shift, cmsketches, fs, false);
+    for (uint j = 0; j < d-1; j++) {
+      cout << setprecision(12) << bincount[j] << " ";
+    }
+    cout << setprecision(12) << bincount[d-1] << endl;
+  }
+  */
 
   return 0;
 }
