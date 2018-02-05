@@ -135,7 +135,6 @@ def daywise_convertsvmlight(folder, out_dir):
         savemat(out_file+"_Labels.mat",{'labels':np.array(labels)})
         print "Length of Label="+str(len(labels))
         
-
 def convert_svmlight_to_dense(folder,out_file):
     for i in range(0,121):
         start_time=time.time()
@@ -195,7 +194,6 @@ def convert_svmlight_to_file(folder,out_file):
     np.save(out_file+"_Labels.npy",np.array(labels))
     savemat(out_file+".mat",{'vect':m})
     savemat(out_file+"_Labels.mat",{'labels':np.array(labels)})
-    
 
 def combine_day45and46(in_folder):
     day45_file = os.path.join(in_folder,"Day45.svm")
@@ -218,7 +216,6 @@ def combine_day45and46(in_folder):
     f.close()
     print "Written 46"
     fw.close()
-    
 
 def modify_fraction(X,y,fraction):
     fraction_anoms = int(fraction * X.shape[0])
@@ -262,6 +259,93 @@ def convert_spectf_to_txt(in_file, out_file):
     print X.shape[0],X.shape[1],num_anoms
     data = np.column_stack((X, labels))
     np.savetxt(out_file, data, delimiter=',')    
+
+def HST_sparse_file_creator(in_dir, out_dir):
+    f = open(os.path.join(in_dir,"Day0.svm"),"r")
+    fw=open(os.path.join(out_dir,"parametersNData_Day0_SpamURL.txt"),"w")
+    data_size = 16000
+    tot_cols = 1000
+    fw.write("*** PARAMETERS ***\t\t\t\t\tdistType\tDistance Measure\n")
+    fw.write("dataSize:\t"+str(data_size)+"\t\t\t\t1\tCosineMeasure\n")
+    fw.write("numClusters:\t"+str(2)+"\t\t\t\t2\tEuclideanMeasure\n")
+    fw.write("distType:\t"+str(1)+"\t\t\t\t\t\n")
+    fw.write("dimension:\t"+str(tot_cols)+"\t\t\t\t\t\n")
+    fw.write("\n")
+    fw.write("*** Data ***\n")
+    colDict={}
+    ctr=0
+    line_ct=0
+    line=f.readline()
+    while line:
+        line_ct+=1
+        if line_ct>200:
+            break
+        line=line.replace("\n","")
+        split = line.split(" ");
+        label = int(split[0])
+        if label == -1:
+            label=0
+        else:
+            label=1
+            
+        fw.write(str(label))
+        for i in range(1,len(split)):
+            split2 = split[i].split(":")
+            colNum = int(split2[0])
+            value =  float(split2[1])
+            
+            try:
+                index = colDict[colNum]
+            except Exception, e:
+                colDict[colNum]=ctr
+                index = ctr
+                ctr+=1
+            
+            fw.write("\t"+str(index)+":"+str(value))
+        fw.write("\n")
+        line=f.readline()
+    f.close()
+    fw.close()
+    print "Number of Columnns="+str(len(colDict.keys()))
+    
+    for day_id in range(1,121):
+        print "Day="+str(day_id)
+        if i==45:
+            f=open(os.path.join(folder,"Day45_46.svm"),"r")
+            fw=open(os.path.join(out_dir,"parametersNData_Day45SpamURL.txt"),"w")
+            i=i+1
+        else:
+            f=open(os.path.join(in_dir,"Day"+str(day_id)+".svm"),"r")
+            fw=open(os.path.join(out_dir,"parametersNData_Day"+str(day_id)+"_SpamURL.txt"),"w")
+        
+        fw.write("Size:200\n")
+        line_ct=0
+        line=f.readline()
+        while line:
+            line_ct+=1
+            if line_ct>200:
+                break
+            line=line.replace("\n","")
+            split = line.split(" ");
+            label = int(split[0])
+            if label == -1:
+                label=0
+            else:
+                label=1
+            fw.write(str(label))
+            for i in range(1,len(split)):
+                split2 = split[i].split(":")
+                colNum = int(split2[0])
+                value =  float(split2[1])
+                try:
+                    index = colDict[colNum]
+                    fw.write("\t"+str(index)+":"+str(value))
+                except Exception,e:
+                    colNum=0
+            fw.write("\n")
+            line=f.readline()
+        f.close()
+        fw.close()
     
 def main():
     BASE_DIR = "../../../New_Benchmark_Datasets"
@@ -283,19 +367,20 @@ def main():
     #convert_svmlight_to_file(folder,out_file)
     
     in_folder = "../../../Data/url_svmlight"
-    combine_day45and46(in_folder)
+    #combine_day45and46(in_folder)
     
     folder = "../../../Data/url_svmlight"
     out_dir = "../../../Data/mod_url_svmlight"
-    daywise_convertsvmlight(folder, out_dir)
+    #daywise_convertsvmlight(folder, out_dir)
     #convert_svmlight_to_dense("../../../Data/mod_url_svmlight","../../../Data/mod_url_svmlight2")
     
     folder = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/url_svmlight"
     out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/parametersNdata_SpamURL.txt"
     #convert_to_HSTreeFile(folder, out_file)
     
-    
-    
+    in_dir = "../../HighmDim_OL/Data/url_svmlight"
+    out_dir = "../../HighDim_Outliers/Data/HST_url_svmlight"
+    HST_sparse_file_creator(in_dir, out_dir)
      
     
 if __name__ == '__main__':
