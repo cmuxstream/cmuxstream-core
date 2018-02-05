@@ -309,7 +309,7 @@ def HST_sparse_file_creator(in_dir, out_dir):
     for day_id in range(1,121):
         print "Day="+str(day_id)
         if day_id==45:
-            f=open(os.path.join(folder,"Day45_46.svm"),"r")
+            f=open(os.path.join(in_dir,"Day45_46.svm"),"r")
             fw=open(os.path.join(out_dir,"parametersNData_Day45SpamURL.txt"),"w")
             fw.write("Size:20131\n")
             day_id=day_id+1
