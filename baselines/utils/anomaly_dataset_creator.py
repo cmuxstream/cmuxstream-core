@@ -378,8 +378,8 @@ def main():
     out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/parametersNdata_SpamURL.txt"
     #convert_to_HSTreeFile(folder, out_file)
     
-    in_dir = "../../HighmDim_OL/Data/url_svmlight"
-    out_dir = "../../HighDim_Outliers/Data/HST_url_svmlight"
+    in_dir = "../../../Data/mod_url_svmlight"
+    out_dir = "../../../Data/HST_url_svmlight"
     HST_sparse_file_creator(in_dir, out_dir)
      
     
