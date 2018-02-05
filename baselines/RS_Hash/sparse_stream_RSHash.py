@@ -225,13 +225,13 @@ def read_dataset3(data_file, label_file):
     return X,y
 
 
-data_file = "../../../Data/SPAM_URL.ssv.npz"
-label_file = "../../../Data/SPAM_URL.ssv_Labels.npy"
+data_file = "../../../Data/SPAM_URL/SPAM_URL.ssv.npz"
+label_file = "../../../Data/SPAM_URL/SPAM_URL.ssv_Labels.npy"
 X,y = read_dataset3(data_file, label_file)
 print "File Read"
 
-out_file = "../../../SpamURL/20K_RSHash_0015.csv"
-sampling_points=20000
+out_file = "../../../SpamURL/1K_RSHash_0015.csv"
+sampling_points=1000
 decay = 0.015
 data = run_RSHash(X, y, sampling_points, decay, out_file)
 #np.savetxt(out_file, data, delimiter=",")

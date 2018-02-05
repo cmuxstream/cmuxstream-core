@@ -305,9 +305,8 @@ def HST_sparse_file_creator(in_dir, out_dir):
     f.close()
     fw.close()
     print "Number of Columnns="+str(len(colDict.keys()))
-    
     for day_id in range(1,121):
-        if day_id==45 or day_id==46:
+        if ((day_id==45) or (day_id==46)):
             print "Day="+str(day_id)
             f=open(os.path.join(in_dir,"Day45_46.svm"),"r")
             fw=open(os.path.join(out_dir,"parametersNData_Day45_SpamURL.txt"),"w")
