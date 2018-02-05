@@ -278,15 +278,13 @@ def HST_sparse_file_creator(in_dir, out_dir):
     line=f.readline()
     while line:
         line_ct+=1
-        if line_ct>200:
-            break
         line=line.replace("\n","")
         split = line.split(" ");
         label = int(split[0])
         if label == -1:
-            label=0
+            label = 0
         else:
-            label=1
+            label = 1
             
         fw.write(str(label))
         for i in range(1,len(split)):
@@ -313,18 +311,16 @@ def HST_sparse_file_creator(in_dir, out_dir):
         if i==45:
             f=open(os.path.join(folder,"Day45_46.svm"),"r")
             fw=open(os.path.join(out_dir,"parametersNData_Day45SpamURL.txt"),"w")
+            fw.write("Size:20131\n")
             i=i+1
         else:
             f=open(os.path.join(in_dir,"Day"+str(day_id)+".svm"),"r")
             fw=open(os.path.join(out_dir,"parametersNData_Day"+str(day_id)+"_SpamURL.txt"),"w")
-        
-        fw.write("Size:200\n")
+            fw.write("Size:20000\n")
         line_ct=0
         line=f.readline()
         while line:
             line_ct+=1
-            if line_ct>200:
-                break
             line=line.replace("\n","")
             split = line.split(" ");
             label = int(split[0])
@@ -378,7 +374,7 @@ def main():
     out_file = "/Users/hemanklamba/Documents/Experiments/HighDim_Outliers/Streaming_HighDim_Case/Data/parametersNdata_SpamURL.txt"
     #convert_to_HSTreeFile(folder, out_file)
     
-    in_dir = "../../../Data/mod_url_svmlight"
+    in_dir = "../../../Data/url_svmlight"
     out_dir = "../../../Data/HST_url_svmlight"
     HST_sparse_file_creator(in_dir, out_dir)
      
