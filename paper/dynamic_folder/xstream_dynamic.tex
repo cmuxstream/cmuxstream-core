@@ -16,6 +16,7 @@
 %\usepackage{apaparencite}
 \usepackage{csquotes}
 \usepackage{wrapfig,booktabs}
+\usepackage{threeparttable}
 %\usepackage[font=small,bf]{caption}
 \usepackage[style=authoryear, maxnames=1, backend=bibtex]{biblatex}
 \addbibresource{xstream.bib}
@@ -63,7 +64,7 @@
     \begin{tabular}{ccccccccc}
     \toprule
     \textbf{Window} & \multicolumn{2}{c}{\textbf{HST}} & \multicolumn{2}{c}{\textbf{LODA}} & \multicolumn{2}{c}{\textbf{XS}} & \multicolumn{2}{c}{\textbf{XS-1000}} \\
-    \textbf{size} $\phi$ & \textit{MAP} & \textit{OAP} & \textit{MAP}& AP     & \textit{MAP} & \textit{OAP} & \textit{MAP} & \textit{OAP}	\\
+    \textbf{size} $\phi$ & \textit{MAP} & \textit{OAP} & \textit{MAP}& \textit{OAP}     & \textit{MAP} & \textit{OAP} & \textit{MAP} & \textit{OAP}	\\
     \midrule
     1\%  & $0.480 \pm 0.178$ & $0.416$ & $0.090 \pm 0.028$ & $0.076$ & $0.505 \pm 0.138$ & $0.422$ &	$0.522 \pm 0.153$ & $0.430$ \\
     5\% & $0.492 \pm 0.179$ & $0.416$ & $0.082 \pm 0.014$ & $0.077$ & $0.455 \pm 0.135$ & $0.406$ &$0.493 \pm 0.134$ & $0.415$	\\
@@ -76,18 +77,25 @@
 
 \begin{table}[!hbtp]
     \centering
+    \begin{threeparttable}
     \begin{tabular}{ccccccccc}
     \toprule
-    \textbf{Window} & \multicolumn{2}{c}{\textbf{HST}} & \multicolumn{2}{c}{\textbf{LODA}} & \multicolumn{2}{c}{\textbf{XS}} & \multicolumn{2}{c}{\textbf{XS-1000}} \\
-    \textbf{size} $\phi$ & \textit{MAP} & \textit{OAP} & \textit{MAP}& AP     & \textit{MAP} & \textit{OAP} & \textit{MAP} & \textit{OAP}	\\
+    \textbf{Window} & \multicolumn{2}{c}{\textbf{HST}} & \multicolumn{2}{c}{\textbf{LODA\tnote{3}}} & \multicolumn{2}{c}{\textbf{XS}} & \multicolumn{2}{c}{\textbf{XS-1000}} \\
+    \textbf{size} $\phi$ & \textit{MAP} & \textit{OAP} & \textit{MAP}& \textit{OAP}     & \textit{MAP} & \textit{OAP} & \textit{MAP} & \textit{OAP}	\\
     \midrule
-    1 day  & $0.331 \pm 0.055$  & 0.3302  & $0.329 \pm 0.059$ & 0.3312 & $0.436 \pm 0.083$ & 0.437 & $0.451 \pm 0.106$ & 0.452 \\
-    3 days & $0.339 \pm 0.058$  & 0.3289  & ---         & ---          & $0.478 \pm 0.078$ & 0.479 & $0.508 \pm 0.064$ & 0.509\\
-    5 days & $0.336 \pm 0.059$  & 0.3292  & ---         & ---          & $0.472 \pm 0.050$ & 0.472 & $0.493 \pm 0.055$ & 0.496 \\
-    7 days & --                  & --      & ---        & ---          & $0.497 \pm 0.053$ & 0.502 & $0.533 \pm 0.049$ & 0.530 \\
+    1 day  & $0.331 \pm 0.055$  & 0.330  & $0.329 \pm 0.059$ & 0.331 & $0.436 \pm 0.083$ & 0.437 & $0.451 \pm 0.106$ & 0.452 \\
+    3 days & $0.339 \pm 0.058$  & 0.329  & $0.324 \pm 0.061$ & 0.345   & $0.478 \pm 0.078$ & 0.479 & $0.508 \pm 0.064$ & 0.509\\
+    5 days & $0.336 \pm 0.059$  & 0.329  & $0.325 \pm 0.049$ & 0.323   & $0.472 \pm 0.050$ & 0.472 & $0.493 \pm 0.055$ & 0.496 \\
+    7 days\tnote{1,2} & --                  & --      & ---        & ---          & $0.497 \pm 0.053$ & 0.502 & $0.533 \pm 0.049$ & 0.530 \\
     \bottomrule
     \end{tabular}
     \caption{Mean average precision (MAP) and overall average precision (OAP) on \texttt{url}. Window sizes as days of incoming URLs, received at 20,000 URLs per-day.}
+    \begin{tablenotes}
+    \item[1] HST exceeds the available memory on a 1 TB machine.
+    \item[2] LODA did not complete running after x days.
+    \item[3] For 3-day and 5-day, the numbers are incomplete and reported only over 12 and 18 windows.
+    \end{tablenotes}
+    \end{threeparttable}
 \end{table}
 
 \printbibliography
