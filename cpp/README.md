@@ -41,7 +41,7 @@ Help with arguments can be displayed by running `./xstream --help`
       --c=<number of chains>               Number of chains [default: 100].
       --d=<depth>                          Depth [default: 15].
       --rowstream                          Row stream (each row starts with a label).
-      --nwindows=<number of windows>       > 0 if windowed [default: 1].
+      --nwindows=<windowed>                > 0 if windowed [default: 1].
       --initsample=<initial sample size>   Initial sample size [default: 256].
       --scoringbatch=<scoring batch size>  Print scores at regular intervals [default: 1000].
       --cosine                             Work in cosine space instead of Euclidean.
@@ -53,9 +53,10 @@ An example of running on 3082 rows of the [synthetic data](https://github.com/cm
 without windows (mimics the static Python implementation) in Euclidean space, scoring just once at the end:
 ```
 cat synDataNoisy.svm | ./xstream --k 50 --c 50 --d 10 --rowstream --nwindows 0 --initsample `wc -l < synDataNoisy.svm` --scoringbatch 100000 > scores
+python test_xstream.py
 ```
 
-An example of evaluating these scores can be run as: `python test_xstream.py`
+An example of evaluating these scores is in `test_xstream.py`.
 
 # Contact
 

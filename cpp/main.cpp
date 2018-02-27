@@ -40,7 +40,7 @@ R"(xstream.
       --c=<number of chains>               Number of chains [default: 100].
       --d=<depth>                          Depth [default: 15].
       --rowstream                          Row stream (each row starts with a label).
-      --nwindows=<number of windows>       > 0 if windowed [default: 1].
+      --nwindows=<windowed>                > 0 if windowed [default: 1].
       --initsample=<initial sample size>   Initial sample size [default: 256].
       --scoringbatch=<scoring batch size>  Print scores at regular intervals [default: 1000].
       --cosine                             Work in cosine space instead of Euclidean.
