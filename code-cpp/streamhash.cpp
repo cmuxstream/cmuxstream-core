@@ -82,25 +82,20 @@ namespace std {
   }
 
   vector<float>
-  streamhash_project(vector<string>& fields, bool fixed,
+  streamhash_project(vector<string>& fields,
                      vector<uint64_t>& h, float density, float constant) {
     uint k = h.size();
     vector<float> xp(k, 0.0);
     for (uint i = 0; i < k; i++) {
       for (uint j = 0; j < fields.size(); j++) {
+        // format: f1:v1 f2:v2 ... fk:vk, k <= D
         uint32_t feature_idx;
         float feature_value;
         const char *fields_str = fields[j].c_str();
-        if (fixed) { // format: v1 v2 ... vD
-          feature_idx = static_cast<uint32_t>(j);
-          feature_value = atof(fields_str);
-        } else { // format: f1:v1 f2:v2 ... fk:vk, k <= D
-          char *dup = strdup(fields_str);
-          feature_idx = static_cast<uint32_t>(atoi(strtok(dup, ":")));
-          feature_value = atof(strtok(NULL, ":"));
-          free(dup);
-        }
-
+        char *dup = strdup(fields_str);
+        feature_idx = static_cast<uint32_t>(atoi(strtok(dup, ":")));
+        feature_value = atof(strtok(NULL, ":"));
+        free(dup);
         xp[i] += (feature_value * streamhash_hash(feature_idx, h[i], density, constant));
       }
     }

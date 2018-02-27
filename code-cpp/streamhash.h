@@ -28,7 +28,7 @@ namespace std {
                      vector<uint64_t>& h, float density, float constant);
 
   vector<float>
-  streamhash_project(vector<string>& fields, bool fixed, 
+  streamhash_project(vector<string>& fields,
                      vector<uint64_t>& h, float density, float constant);
 }
 #endif

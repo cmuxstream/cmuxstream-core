@@ -1,3 +1,4 @@
+#include <bitset>
 #include <cassert>
 #include "chain.h"
 #include <cmath>
@@ -19,13 +20,13 @@ namespace std {
 
     for (uint c_i = 0; c_i < c; c_i++) {
       for (uint d_i = 0; d_i < d; d_i++) {
-        fs[c_i][d_i] = dis(prng);
+        int feature = dis(prng);
+        fs[c_i][d_i] = feature;
       }
     }
   }
 
   float
-  //tuple<float,vector<float>>
   chains_add(vector<float>& xp, vector<vector<float>>& deltamax, vector<vector<float>>& shift,
              vector<vector<unordered_map<vector<int>,int>>>& cmsketches,
              vector<vector<uint>>& fs, bool update) {
@@ -36,7 +37,6 @@ namespace std {
 
     vector<vector<float>> scaled_bincount(nchains, vector<float>(depth));
 
-    // compute bincounts
     for (uint c = 0; c < nchains; c++) {
       vector<float> prebin(k, 0.0);
       vector<bool> used(k, false);
@@ -57,32 +57,58 @@ namespace std {
         if (update) {
           cmsketches[c][d][bin]++;
         }
-        scaled_bincount[c][d] = cmsketches[c][d][bin] * pow(2.0, d + 1);
+        scaled_bincount[c][d] = log2(cmsketches[c][d][bin] + 1) + (d + 1);
       }
     }
 
-    // compute anomaly score
     float avg_anomalyscore = 0.0;
     for (uint c = 0; c < nchains; c++) {
       float score_c = scaled_bincount[c][0];
       for (uint d = 1; d < depth; d++) {
-        if (scaled_bincount[c][d] < score_c)
+        if (scaled_bincount[c][d] < score_c) {
           score_c = scaled_bincount[c][d];
+        }
       }
       avg_anomalyscore += score_c;
     }
     avg_anomalyscore /= nchains;
 
-    /*vector<float> avg_bincount(depth);
-    for (uint d = 0; d < depth; d++) {
-      for (uint c = 0; c < nchains; c++) {
-        avg_bincount[d] += scaled_bincount[c][d];
-      }
-      avg_bincount[d] /= nchains;
-    }*/
-
-    //return make_pair(avg_anomalyscore, avg_bincount);
     return avg_anomalyscore;
   }
 
+  float
+  chains_add_cosine(vector<float>& xp,
+                    vector<vector<unordered_map<vector<int>,int>>>& cmsketches,
+                    vector<vector<uint>>& fs, bool update) {
+
+    uint nchains = cmsketches.size();
+    uint depth = cmsketches[0].size();
+
+    vector<vector<float>> scaled_bincount(nchains, vector<float>(depth));
+
+    for (uint c = 0; c < nchains; c++) {
+      vector<int> bin;
+      for (uint d = 0; d < depth; d++) {
+        bin.push_back(signbit(xp[fs[c][d]]));
+        if (update) {
+          cmsketches[c][d][bin]++;
+        }
+        scaled_bincount[c][d] = log2(cmsketches[c][d][bin] + 1) + (d + 1);
+      }
+    }
+
+    float avg_anomalyscore = 0.0;
+    for (uint c = 0; c < nchains; c++) {
+      float score_c = scaled_bincount[c][0];
+      for (uint d = 1; d < depth; d++) {
+        if (scaled_bincount[c][d] < score_c) {
+          score_c = scaled_bincount[c][d];
+        }
+      }
+      avg_anomalyscore += score_c;
+    }
+    avg_anomalyscore /= nchains;
+
+    return avg_anomalyscore;
+  }
 }
