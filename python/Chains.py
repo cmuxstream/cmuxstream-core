@@ -3,7 +3,6 @@
 import itertools
 from StreamhashProjection import StreamhashProjection
 import numpy as np
-import pathos.pools as pp
 import tqdm
 tqdm.tqdm.monitor_interval = 0
 
