@@ -1,4 +1,4 @@
-# xStream - Python
+# xStream - C++
 
 [https://cmuxstream.github.io](https://cmuxstream.github.io)
 
