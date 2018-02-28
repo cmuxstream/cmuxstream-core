@@ -53,10 +53,10 @@ An example of running on 3082 rows of the [synthetic data](https://github.com/cm
 without windows (mimics the static Python implementation) in Euclidean space, scoring just once at the end:
 ```
 cat synDataNoisy.svm | ./xstream --k 50 --c 50 --d 10 --rowstream --nwindows 0 --initsample `wc -l < synDataNoisy.svm` --scoringbatch 100000 > scores
-python test_xstream.py
+python test_xstream_static.py
 ```
 
-An example of evaluating these scores is in `test_xstream.py`.
+An example of evaluating these scores is in `test_xstream_static.py`.
 
 # Contact
 
